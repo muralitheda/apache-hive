@@ -170,5 +170,5 @@ Hive is excellent for big data analytics, batch ETL/ELT, and reporting at scale,
 
 # 🔧 DataWarehouse Process vs LakeHouse Process
 
-| <img src="images/dwh_process.png" alt="dwh> | <img src="images/dlh_process.png" alt="dlh> |
+| <img src="images/dwh_process.png" alt="dwh"> | <img src="images/dlh_process.png" alt="dlh"> |
 |---------------------------------------------|---------------------------------------------|
