@@ -69,10 +69,3 @@ When you write and submit a query in Hive, it undergoes multiple internal steps:
 ✅ **In summary:**  
 Hive is a powerful SQL layer that makes it easy to process and analyze big data in Hadoop and modern cloud storage systems.  
 Its design supports large-scale, schema-flexible, and iterative analytics — perfect for data engineers and analysts working on big data.
-
-If you'd like, I can also generate:
-- 📊 A diagram of the query flow
-- 🧩 A mind map of Hive capabilities
-- 📝 A shorter summary note
-
-Just let me know! 🚀
