@@ -165,7 +165,7 @@ Load data into HDFS → create Hive table → transform and analyze as needed.
 
 ---
 
-✅**Summary:**  
+✅## 📊 Summary
 Hive is excellent for big data analytics, batch ETL/ELT, and reporting at scale, but it isn’t designed to handle real-time transactions or serve as an OLTP database.
 
 
