@@ -83,9 +83,63 @@ Here’s what makes Hive valuable in big data and analytics pipelines:
 
 ---
 
-## 📊 Summary
+# 📊 DB vs Hive: Architecture & Characteristics
 
-Hive plays a crucial role in big data ecosystems:
-- Acts as a SQL bridge between raw data (Data Lake) and business-ready data (Lakehouse).
-- Integrates well with BI tools, data catalogs, and orchestration frameworks.
-- Empowers Data Engineers & Analysts to work at scale with familiar SQL.
+| Feature                | DB / Data Warehouse (DW)                                              | Hive (on Hadoop)                                                                            |
+|-----------------------|------------------------------------------------------------------------|---------------------------------------------------------------------------------------------|
+| **Architecture**     | Non-distributed but supports parallelism                                 | Distributed; supports parallelism in both storage & processing                              |
+| **Coupling**         | Tightly coupled (components are non-detachable, monolithic)             | Loosely coupled (plug & play; components can be swapped or configured independently)        |
+| **Transparency**     | Blackbox (can't easily see or change internals)                         | Whitebox (can see, control, and change internal components like Metastore, engine, storage) |
+
+---
+
+# ⚡ Latency vs Throughput
+
+| Metric        | Explanation                                                                                                   |
+|--------------|-----------------------------------------------------------------------------------------------------------------|
+| **Latency**   | Response time for small data volumes. Time taken to perform operations on a low-volume dataset.               |
+| **Throughput**| Ability to handle and process high volumes of data within a stipulated time window.                            |
+
+---
+
+# 🔧 HQL vs DB/DW SQL
+
+| Feature                                    | Hive (HQL)                                                                        | DB / DW SQL                                                       |
+|-------------------------------------------|----------------------------------------------------------------------------------|------------------------------------------------------------------|
+| **ETL / ELT**                             | Supports both ELT & ETL                                                           | Mainly ETL                                                        |
+| **Latency / Throughput**                  | High latency / high throughput (batch-oriented). Low latency possible with Spark & Tez | Low latency / low throughput (optimized for quick, small queries) |
+| **Parsing strategy**                       | Query time parsing → flexible (ELT). Load time parsing → performance (ETL)        | Load time parsing → performance (ETL)                            |
+| **Transformation timing**                  | Load data without cleansing/reformatting → transform/cleanse during query         | Data cleansing/reformatting during load                          |
+| **Data type support**                      | Structured (tables) and semi-structured (JSON, XML, HTML)                         | Mainly structured (tables: rows & columns)                       |
+| **Workload type**                          | Iterative workloads: multiple iterations like creating new tables, refining models | Defined workloads: predefined schema & queries                    |
+| **Example: ELT**                          | Load raw data into HDFS → create Hive table → transform/analyze later             | Typically transform before loading into DB tables (ETL)           |
+
+---
+
+# 🔄 Iterative vs Defined workloads
+
+- **Iterative workload (Hive):**  
+  Perform multiple passes over data, refine queries or tables until the output matches requirements.  
+  E.g., add new columns, test transformations, re-run jobs.
+
+- **Defined workload (DB/DW):**  
+  Data model and transformation logic are mostly fixed and productionized.
+
+---
+
+# ⚙ Performance Comparison
+
+|                    | Throughput                                    | Latency                                                                                 |
+|-------------------|-----------------------------------------------|----------------------------------------------------------------------------------------|
+| **Hive**          | High: e.g., processing 100 GB in ~10 minutes | High (using MR): e.g., process 10 rows → 1 min. Low (using Spark/Tez): e.g., process 10 rows → ~2 sec |
+| **DB / DW**       | Lower: e.g., processing 100 GB in ~20 hours  | Low: process 10 rows → < 1 sec                                                          |
+
+---
+
+✅ **Parsing note:**  
+Parsing = Converting semi-structured data (e.g., JSON, XML) into structured form (tables).
+
+✅ **ELT in Hive:**  
+Load data into HDFS → create Hive table → transform and analyze as needed.
+
+---
