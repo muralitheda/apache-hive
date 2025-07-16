@@ -143,6 +143,8 @@ This architecture makes Hive modular, fault-tolerant, and scalable.
 
 ## 📦 DataWarehouse Process vs LakeHouse Process
 
-| <img src="images/dwh_process.png" alt="dwh"> | <img src="images/dlh_process.png" alt="dlh"> |
+| <img src="images/dwh_process.png" alt="dwh">  | <img src="images/dlh_process.png" alt="dlh">  |
+|------------------|----------------------|
+
 
 ✅ *Summary: Hive bridges raw data storage and business analytics, perfect for big data, not small transactional workloads.*
