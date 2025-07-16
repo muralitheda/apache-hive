@@ -163,7 +163,7 @@ Load data into HDFS → create Hive table → transform and analyze as needed.
 | ✅ Acts as a **supplementary/complementary tool** for building modern data warehouses (Lakehouse) on top of a Data Lake — helps migrate, consolidate, or converge data pipelines. | ❌ Not meant as a direct replacement for OLTP databases; instead, Hive can **complement OLTP systems** by providing OLAP (analytical) queries, reports, and backups on top of transactional data. |
 | ✅ Best suited for **historical data processing and analysis** (hourly, daily, monthly, yearly). | ❌ Not for real-time or live data processing. Also, each `INSERT` operation creates a new file in HDFS, so bulk inserts or batch loads are recommended instead of row-level inserts. |
 
-✅ 📊 Summary  
+✅📊 **Summary**  
 Hive is excellent for big data analytics, batch ETL/ELT, and reporting at scale, but it isn’t designed to handle real-time transactions or serve as an OLTP database.
 
 ---
