@@ -85,6 +85,10 @@ WITH SERDEPROPERTIES ("case.insensitive" = "false")
 STORED AS TEXTFILE
 LOCATION '/user/hduser/hive_batch_db/json_tbl';
 
+-- Check the source file
+$ cat /home/hduser/jsondata.json 
+{"id":1,"age":"thirty three","name":"alon harper"}
+
 -- Load data
 LOAD DATA LOCAL INPATH "/home/hduser/jsondata.json" INTO TABLE hive_json_tbl;
 
