@@ -105,7 +105,10 @@ CREATE EXTERNAL TABLE hive_json_tbl_1(
   age SMALLINT,
   city STRING
 )
-...
+ROW FORMAT SERDE 'org.apache.hive.hcatalog.data.JsonSerDe'
+WITH SERDEPROPERTIES ("case.insensitive" = "false")
+STORED AS TEXTFILE
+LOCATION '/user/hduser/hive_batch_db/json_tbl';
 
 -- Iteration 2
 CREATE EXTERNAL TABLE hive_json_tbl_2(
@@ -114,7 +117,10 @@ CREATE EXTERNAL TABLE hive_json_tbl_2(
   age VARCHAR(10),
   city STRING
 )
-...
+ROW FORMAT SERDE 'org.apache.hive.hcatalog.data.JsonSerDe'
+WITH SERDEPROPERTIES ("case.insensitive" = "false")
+STORED AS TEXTFILE
+LOCATION '/user/hduser/hive_batch_db/json_tbl';
 
 -- Iteration 3
 CREATE EXTERNAL TABLE hive_json_tbl_3(
@@ -123,7 +129,10 @@ CREATE EXTERNAL TABLE hive_json_tbl_3(
   age VARCHAR(100),
   city STRING
 )
-...
+ROW FORMAT SERDE 'org.apache.hive.hcatalog.data.JsonSerDe'
+WITH SERDEPROPERTIES ("case.insensitive" = "false")
+STORED AS TEXTFILE
+LOCATION '/user/hduser/hive_batch_db/json_tbl';
 ```
 
 ## Table Structure
