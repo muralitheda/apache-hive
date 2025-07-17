@@ -262,6 +262,10 @@ LOCATION '/user/hduser/warehouse/hive_batch_db.db/sample_table5';
 
 INSERT INTO sample_table5 VALUES (1, 'MURALI');
 INSERT INTO sample_table5 VALUES (2, 'JACK');
+
+DESC sample_table5;
+DESC EXTENDED sample_table5;
+
 ```
 
 ## When to Use Which Option
