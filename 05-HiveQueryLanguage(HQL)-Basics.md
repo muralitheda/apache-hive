@@ -150,6 +150,10 @@ Hive tables are structured in rows and columns.
 
 ```text
 $ cat /home/hduser/datatypedata.txt
+1, Jack, 43, I am an IT professional with 3 kids residing in Chennai with an experience of 20 years..., 139 ~ 53rd Main Road ~ AED Colony ~ Velachery, TN, 5.11, 102, 1982-02-22, 2024-12-28 11:08:01, true, 110000000123410
+
+
+---looks like below
 1,
 Jack,
 43,
@@ -204,6 +208,9 @@ CREATE TABLE custinfo_simple (
   acct_no BIGINT
 )
 ROW FORMAT DELIMITED FIELDS TERMINATED BY ',';
+
+LOAD DATA LOCAL INPATH '/home/hduser/datatypedata.txt' INTO TABLE custinfo_simple;
+
 ```
 
 ## Basic Table Creation Syntax
