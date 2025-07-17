@@ -110,7 +110,7 @@ WITH SERDEPROPERTIES ("case.insensitive" = "false")
 STORED AS TEXTFILE
 LOCATION '/user/hduser/hive_batch_db/json_tbl';
 
-SELECT * FROM hive_json_tbl_1;
+SELECT * FROM hive_json_tbl_1;  --ERROR due to data format is different
 
 -- Iteration 2
 CREATE EXTERNAL TABLE hive_json_tbl_2(
@@ -124,7 +124,7 @@ WITH SERDEPROPERTIES ("case.insensitive" = "false")
 STORED AS TEXTFILE
 LOCATION '/user/hduser/hive_batch_db/json_tbl';
 
-SELECT * FROM hive_json_tbl_2;
+SELECT * FROM hive_json_tbl_2; --PARTIAL success due to data format is matched
 
 -- Iteration 3
 CREATE EXTERNAL TABLE hive_json_tbl_3(
@@ -138,7 +138,7 @@ WITH SERDEPROPERTIES ("case.insensitive" = "false")
 STORED AS TEXTFILE
 LOCATION '/user/hduser/hive_batch_db/json_tbl';
 
-SELECT * FROM hive_json_tbl_3;
+SELECT * FROM hive_json_tbl_3; --FULLsuccess due to data format is matched
 
 ```
 
