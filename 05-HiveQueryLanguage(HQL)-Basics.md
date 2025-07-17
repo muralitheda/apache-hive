@@ -29,8 +29,8 @@ LOCATION '/user/hduser/hive_batch_db'
 WITH DBPROPERTIES ('created_by' = 'trainer', 'created_on' = '2024-12-28');
 
 -- Drop database
-DROP DATABASE hive_batch_db;
-DROP DATABASE hive_batch_db CASCADE;
+DROP DATABASE hive_batch_db; -- This command attempts to drop an empty database
+DROP DATABASE hive_batch_db CASCADE; -- This command is used to forcefully drop a database and all its contents (tables)
 
 -- Use database
 USE hive_batch_db;
