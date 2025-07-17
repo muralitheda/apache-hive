@@ -153,7 +153,7 @@ This architecture makes Hive modular, fault-tolerant, and scalable.
 
 
 ---
-# Hive Capabilities Mind Map
+# Summary
 
 * **📊 Data Storage & Processing**
     * 💾 Scalable Storage (Distributed)
