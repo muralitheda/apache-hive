@@ -110,6 +110,8 @@ WITH SERDEPROPERTIES ("case.insensitive" = "false")
 STORED AS TEXTFILE
 LOCATION '/user/hduser/hive_batch_db/json_tbl';
 
+SELECT * FROM hive_json_tbl_1;
+
 -- Iteration 2
 CREATE EXTERNAL TABLE hive_json_tbl_2(
   id INT,
@@ -122,6 +124,8 @@ WITH SERDEPROPERTIES ("case.insensitive" = "false")
 STORED AS TEXTFILE
 LOCATION '/user/hduser/hive_batch_db/json_tbl';
 
+SELECT * FROM hive_json_tbl_2;
+
 -- Iteration 3
 CREATE EXTERNAL TABLE hive_json_tbl_3(
   id INT,
@@ -133,6 +137,9 @@ ROW FORMAT SERDE 'org.apache.hive.hcatalog.data.JsonSerDe'
 WITH SERDEPROPERTIES ("case.insensitive" = "false")
 STORED AS TEXTFILE
 LOCATION '/user/hduser/hive_batch_db/json_tbl';
+
+SELECT * FROM hive_json_tbl_3;
+
 ```
 
 ## Table Structure
