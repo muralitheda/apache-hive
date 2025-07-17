@@ -149,6 +149,7 @@ Hive tables are structured in rows and columns.
 ### Sample Record
 
 ```text
+$ cat /home/hduser/datatypedata.txt
 1,
 Jack,
 43,
