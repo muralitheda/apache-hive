@@ -10,6 +10,11 @@ It provides a familiar SQL-like interface (**HiveQL**) to query and analyze larg
   - **Spark:** In-memory processing, very fast for large analytical jobs.
 - **Metadata/Metastore:** Stores tables, partitions, columns, etc., typically backed by MySQL, PostgreSQL, or Oracle.
 
+<details>
+  <summary> Click to view the Hive Architecture Overview </summary>
+  <img src="images/hive_architecture.png" alt="Hive">
+</details>
+
 ---
 
 ## 🌟 Why Learn Hive?
