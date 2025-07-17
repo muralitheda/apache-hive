@@ -152,4 +152,65 @@ This architecture makes Hive modular, fault-tolerant, and scalable.
 |------------------|----------------------|
 
 
-✅ *Summary: Hive bridges raw data storage and business analytics, perfect for big data, not small transactional workloads.*
+---
+# Hive Capabilities Mind Map
+
+* **📊 Data Storage & Processing**
+    * 💾 Scalable Storage (Distributed)
+    * ✨ Parallel Processing
+    * ⏱️ Batch Processing
+    * 🔄 ETL (Extract, Transform, Load) Operations
+
+* **🔍 Querying & Analysis**
+    * ✍️ SQL-like Interface (HiveQL)
+    * ✅ Supports Standard SQL Functions
+    * ➕ User-Defined Functions (UDFs)
+    * 🧩 Complex Data Types (Arrays, Maps, Structs)
+    * 📈 Integration with BI Tools
+
+* **🏗️ Architecture & Design**
+    * 🐘 Built on Hadoop Ecosystem (HDFS, YARN, MapReduce/Tez/Spark)
+    * 📚 Metastore (Schema, Table Definitions)
+    * 💻 Driver (CLI, JDBC/ODBC)
+    * ⚙️ Execution Engines (MapReduce, Tez, Spark)
+    * 🔌 Loosely Coupled / Plug-and-Play
+
+* **🚀 Performance & Optimization**
+    * ➡️ Partitioning
+    * 🧺 Bucketing
+    * 🧠 Cost-Based Optimizer (CBO)
+    * ⚡ Vectorization
+    * 💨 Caching (e.g., LLAP for Tez)
+    * ⚡ Materialized Views (HPL)
+
+* **🔒 Security & Governance**
+    * 🔑 Authentication (Kerberos)
+    * 👮 Authorization (SQL Standard Based)
+    * 📏 Row-level / Column-level Security
+    * 🎭 Data Masking
+    * 📋 Auditing
+
+* **🗄️ Data Formats**
+    * 📁 Supports Various Formats
+        * 📄 Text (CSV, TSV)
+        * 📦 SequenceFile
+        * 🗂️ RCFile
+        * 📊 ORC (Optimized Row Columnar)
+        * 📈 Parquet (Columnar)
+    * 🤏 Compression Support
+
+* **🔗 Integration**
+    * 🌐 Hadoop Ecosystem (HDFS, YARN)
+    * 🔥 Spark
+    * 🚀 HBase
+    * 💬 Kafka
+    * 🗄️ RDBMS (via Sqoop)
+    * 🛠️ Various Tools (BI, Machine Learning)
+
+* **🔧 Extensibility (White-Box)**
+    * 🔄 Custom SerDe (Serializer/Deserializer)
+    * 📂 Custom File Formats
+    * ➕ Custom UDFs/UDAFs/UDTFs
+    * 🤝 Integration with external systems
+
+---
