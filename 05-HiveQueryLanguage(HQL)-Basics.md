@@ -9,38 +9,38 @@ $ hive
 ## Basic Settings
 
 ```sql
-hive> set hive.cli.print.current.db=true;
-hive> set hive.cli.print.header=true;
+set hive.cli.print.current.db=true;  
+set hive.cli.print.header=true;  
 ```
 
 ## Database Operations
 
 ```sql
 -- Show all databases
-hive> show databases;
+show databases;  
 
 -- Show databases with name pattern
-hive> show databases like '*hive*';
+show databases like '*hive*';  
 
 -- Create a new database
-hive> CREATE DATABASE IF NOT EXISTS hive_batch_db
+CREATE DATABASE IF NOT EXISTS hive_batch_db
 COMMENT 'Hive batch training database'
 LOCATION '/user/hduser/hive_batch_db'
 WITH DBPROPERTIES ('created_by' = 'trainer', 'created_on' = '2024-12-28');
 
 -- Drop database
-hive> DROP DATABASE hive_batch_db;
-hive> DROP DATABASE hive_batch_db CASCADE;
+DROP DATABASE hive_batch_db;
+DROP DATABASE hive_batch_db CASCADE;
 
 -- Use database
-hive> USE hive_batch_db;
+USE hive_batch_db;
 
 -- Describe database
-hive> DESC DATABASE hive_batch_db;
-hive> DESC DATABASE EXTENDED hive_batch_db;
+DESC DATABASE hive_batch_db;
+DESC DATABASE EXTENDED hive_batch_db;
 
 -- List tables
-hive> SHOW TABLES;
+SHOW TABLES;
 
 -- HDFS check
 $ hadoop fs -ls /user/hduser/hive_batch_db
@@ -130,14 +130,14 @@ Hive tables are structured in rows and columns.
 
 ```text
 1,
-irfan,
+Jack,
 43,
-i am an IT professional with 2 kids residing in chennai with an experience of 20 years...,
-139 ~ 5th main road ~ AGS Colony ~ Velachery,
+i am an IT professional with 3 kids residing in chennai with an experience of 20 years...,
+139 ~ 53th main road ~ AED Colony ~ Velachery,
 TN,
 5.11,
 102,
-1982-01-29,
+1982-02-22,
 2024-12-28 11:08:01,
 true,
 110000000123410
