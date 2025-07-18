@@ -58,7 +58,7 @@ SELECT * FROM somehivetbl;
 -- Identify the table HDFS location
 hive> DESCRIBE FORMATTED somehivetbl;
 
-vi sampldata3
+$ vi /home/hduser/sampldata3
 10|ranjith
 11|ragavi
 12|ragavan
