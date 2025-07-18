@@ -20,12 +20,13 @@ CREATE TABLE somehivetbl (
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '|';
 ```
 
--- Sample data file
+*Sample data file*
+```bash
 $ vi sampldata3
 10|ranjith  
 11|ragavi  
-12|ragavan  
-
+12|ragavan
+```
 
 ```sql
 LOAD DATA LOCAL INPATH '/home/hduser/sampldata' INTO TABLE somehivetbl;
