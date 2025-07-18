@@ -9,6 +9,8 @@
 *Hive is simply copying the data to the underlying location.*
 
 ```sql
+set hive.cli.print.current.db=true;  
+set hive.cli.print.header=true; 
 USE hive_batch_db;
 
 CREATE TABLE somehivetbl (
