@@ -142,5 +142,3 @@ INSERT INTO tablename VALUES (1, 'user1'), (2, 'user2');
 ```
 
 ---
-
-Would you like this appended to the existing Markdown file or downloaded separately?
