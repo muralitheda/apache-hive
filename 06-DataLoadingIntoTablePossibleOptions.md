@@ -22,10 +22,10 @@ ROW FORMAT DELIMITED FIELDS TERMINATED BY '|';
 
 *Sample data file*
 ```bash
-$ vi sampldata3
-10|ranjith  
-11|ragavi  
-12|ragavan
+$ vi /home/hduser/sampldata3
+10|alan  
+11|harper  
+12|jack
 ```
 
 ```sql
