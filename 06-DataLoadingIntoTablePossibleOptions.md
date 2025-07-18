@@ -22,10 +22,14 @@ ROW FORMAT DELIMITED FIELDS TERMINATED BY '|';
 
 *Sample data file*
 ```bash
-$ vi /home/hduser/sampldata3
-10|alan  
-11|harper  
-12|jack
+$ vi /home/hduser/sampldata
+1|chandler
+2|monica
+3|joey
+4|phoebe
+5|rachel
+6|ross
+
 ```
 
 ```sql
@@ -44,6 +48,11 @@ LOAD DATA INPATH '/user/hduser/sampldata' OVERWRITE INTO TABLE somehivetbl;
 ```bash
 -- Identify the table HDFS location
 hive> DESCRIBE FORMATTED somehivetbl;
+
+vi sampldata3
+10|ranjith
+11|ragavi
+12|ragavan
 
 -- Copy file into Hive warehouse location
 $ hadoop fs -put /home/hduser/sampldata3 /user/hive/warehouse/hivedatabase.db/somehivetbl/sampldata3
