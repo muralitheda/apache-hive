@@ -42,8 +42,11 @@ $ hadoop fs -cat /user/hduser/sampledata
 8|chin
 9|suetlin
 
-LOAD DATA INPATH '/user/hduser/sampldata' OVERWRITE INTO TABLE somehivetbl;
--- Data will be moved to Hive table and source location data will be removed.
+LOAD DATA INPATH '/user/hduser/sampledata' OVERWRITE INTO TABLE somehivetbl;
+-- NOTE: Data will be moved to Hive table and source location data will be removed.
+
+SELECT * FROM somehivetbl;
+
 ```
 
 ---
