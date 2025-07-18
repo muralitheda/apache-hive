@@ -55,7 +55,7 @@ FIELDS TERMINATED BY ',';
 **Load data**:
 
 ```sql
-LOAD DATA LOCAL INPATH '/home/hduser/hive/data/customer-data-row.txt' 
+LOAD DATA LOCAL INPATH '/home/hduser/hive/data/custs' 
 INTO TABLE raw_table;
 ```
 
