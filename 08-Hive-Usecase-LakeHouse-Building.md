@@ -1,6 +1,12 @@
 
 # Hive Retail Data Pipeline: Raw → Curated → Analytical
 
+<details>
+  <summary> Click to view the Datalake/House Architecture </summary>
+  <img src="images/datalakehouse-arch.png" alt="Diagram">
+</details>
+
+
 ## 1. Create Landing Pad
 
 **Landing pad creation:**
