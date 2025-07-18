@@ -75,6 +75,7 @@ SELECT * FROM somehivetbl;
 ### 3. Creating External Table with Location Clause
 
 ```sql
+
 CREATE EXTERNAL TABLE somehivetbl_2 (
   id STRING,
   name STRING
