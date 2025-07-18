@@ -80,7 +80,7 @@ CREATE EXTERNAL TABLE somehivetbl_2 (
   name STRING
 )
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
-LOCATION '/user/hive/warehouse/hivedatabase.db/somehivetbl';
+LOCATION '/user/hduser/hive_batch_db/somehivetbl';
 ```
 
 ---
