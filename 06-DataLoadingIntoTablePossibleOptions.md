@@ -64,7 +64,10 @@ $ vi /home/hduser/sampldata3
 12|ragavan
 
 -- Copy file into Hive warehouse location
-$ hadoop fs -put /home/hduser/sampldata3 /user/hive/warehouse/hivedatabase.db/somehivetbl/sampldata3
+$ hadoop fs -put /home/hduser/sampldata3 /user/hduser/hive_batch_db/somehivetbl/sampledata3
+
+SELECT * FROM somehivetbl;
+
 ```
 
 ---
