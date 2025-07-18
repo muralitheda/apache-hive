@@ -9,6 +9,8 @@
 *Hive is simply copying the data to the underlying location.*
 
 ```sql
+USE hive_batch_db;
+
 CREATE TABLE somehivetbl (
   id INT,
   name STRING
