@@ -120,7 +120,7 @@ INSERT INTO somehivetbl3 SELECT * FROM somehivetbl;
 
 ### 5. Using Tools (Shell Scripts, ETL Tools, Sqoop, Spark)
 
-```bash
+```sql
 # Sqoop example 1
 sqoop import --connect jdbc:mysql://127.0.0.1/mysql --username root --password Root123$ \
 --table user --driver com.mysql.cj.jdbc.Driver \
