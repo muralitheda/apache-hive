@@ -57,6 +57,8 @@ FIELDS TERMINATED BY ',';
 ```sql
 LOAD DATA LOCAL INPATH '/home/hduser/hive/data/custs' 
 INTO TABLE raw_table;
+
+SELECT * FROM raw_table;
 ```
 
 ---
@@ -74,6 +76,8 @@ CREATE EXTERNAL TABLE final_table (
 ROW FORMAT DELIMITED 
 FIELDS TERMINATED BY '|'
 LOCATION '/user/hduser/extdata';
+
+SELECT * FROM final_table;
 ```
 
 ---
@@ -87,6 +91,8 @@ INSERT INTO final_table
 SELECT id, age, UPPER(prof)
 FROM raw_table
 WHERE prof = 'Pilot';
+
+SELECT * FROM final_table;
 ```
 
 ---
