@@ -75,7 +75,7 @@ CREATE EXTERNAL TABLE final_table (
 )
 ROW FORMAT DELIMITED 
 FIELDS TERMINATED BY '|'
-LOCATION '/user/hduser/extdata';
+LOCATION '/user/hduser/externaldata';
 
 SELECT * FROM final_table;
 ```
