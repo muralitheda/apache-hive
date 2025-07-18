@@ -123,7 +123,7 @@ INSERT INTO somehivetbl3 SELECT * FROM somehivetbl;
 ```sql
 # Sqoop example 1
 sqoop import --connect jdbc:mysql://127.0.0.1/mysql --username root --password Root123$ \
---table user --driver com.mysql.cj.jdbc.Driver \
+--table component --driver com.mysql.cj.jdbc.Driver \
 --hive-import --hive-table hive_batch_db.mysql_user_table -m 1 --delete-target-dir
 
 # Sqoop example 2
