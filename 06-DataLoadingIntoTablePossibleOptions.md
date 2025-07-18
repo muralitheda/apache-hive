@@ -122,14 +122,14 @@ INSERT INTO somehivetbl3 SELECT * FROM somehivetbl;
 
 ```bash
 # Sqoop example 1
-sqoop import --connect jdbc:mysql://127.0.0.1/custdb --username root --password Root123$ \
---table customer --driver com.mysql.cj.jdbc.Driver \
---hive-import --hive-table hivedatabase.somehivetbl4 -m 1 --delete-target-dir
+sqoop import --connect jdbc:mysql://127.0.0.1/mysql --username root --password Root123$ \
+--table user --driver com.mysql.cj.jdbc.Driver \
+--hive-import --hive-table hive_batch_db.mysql_user_table -m 1 --delete-target-dir
 
 # Sqoop example 2
 sqoop import --connect jdbc:mysql://00.00.00.00.10/core_banking --username izusername --password izpassword \
 --table payments --driver com.mysql.cj.jdbc.Driver \
---hive-import --hive-table hivedatabase.payments -m 1 --delete-target-dir
+--hive-import --hive-table hive_batch_db.payments -m 1 --delete-target-dir
 ```
 
 ---
