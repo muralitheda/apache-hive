@@ -34,6 +34,7 @@ $ vi /home/hduser/sampldata
 
 ```sql
 LOAD DATA LOCAL INPATH '/home/hduser/sampldata' INTO TABLE somehivetbl;
+-- NOTE: Data will be appended if load happens again.
 
 LOAD DATA LOCAL INPATH '/home/hduser/sampldata' OVERWRITE INTO TABLE somehivetbl;
 
