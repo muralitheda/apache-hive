@@ -54,7 +54,7 @@ SELECT * FROM somehivetbl;
 
 ### 2. Manually Copying Data Using `hadoop fs -put`
 
-```bash
+```sql
 -- Identify the table HDFS location
 hive> DESCRIBE FORMATTED somehivetbl;
 
