@@ -81,6 +81,9 @@ CREATE EXTERNAL TABLE somehivetbl_2 (
 )
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 LOCATION '/user/hduser/hive_batch_db/somehivetbl';
+
+SELECT * FROM somehivetbl_2;
+
 ```
 
 ---
@@ -94,6 +97,9 @@ LOCATION '/user/hduser/hive_batch_db/somehivetbl';
 CREATE TABLE somehivetbl_3
 ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
 AS SELECT * FROM somehivetbl;
+
+SELECT * FROM somehivetbl_3;
+
 ```
 
 ```sql
