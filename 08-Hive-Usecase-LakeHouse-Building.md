@@ -34,6 +34,7 @@ record_id, transaction_date, customer_id, amount, sports_category, sports_type, 
 ## 2. Copy Data to Transient/Zone
 
 ```bash
+hadoop fs -rm -r /user/hduser/retaildata
 hadoop fs -mkdir /user/hduser/retaildata
 hadoop fs -put -f /home/hduser/retaildata/retail-txns.csv /user/hduser/retaildata/retail-txns.csv
 ```
@@ -99,6 +100,8 @@ select * from db_retail_raw.tbl_retail_raw_staging limit 5;
 > *External table so other systems can access.*
 
 ```sql
+hadoop fs -rm -r /user/hduser/retaildata_curated
+
 create external table db_retail_curated.tbl_retail_curated_final (
   record_id int, 
   transaction_date date, 
