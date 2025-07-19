@@ -1,94 +1,224 @@
-### Managed (Container) Table & External (Referrer) Tables: Important
 
-**Managed Table**
-a. **Syntax (must):** `CREATE TABLE tblname (colname datatype);`
-b. **Location:** Is not used in managed table usually because Hive manages it, but it's possible to use.
-c. **Semantics (must):** If you `DROP TABLE`, both the table structure/schema and data will be dropped.
-d. **Data Loading and Access:** Data is loaded and accessed by Hive itself.
-e. **Operations:** Managed tables can be `TRUNCATED`, and you can create `CTAS` (Create Table As Select).
+# 🗂️ Managed vs External Tables in Hive
 
-**External Table**
-a. **Syntax (must):** `CREATE EXTERNAL TABLE tblname (colname datatype) LOCATION '/somelocation/somelocation';`
-b. **Location:** Is mentioned usually because users manage it, but it's possible to not use.
-c. **Semantics (must):** If you `DROP TABLE`, only the table structure/schema will be dropped, and the data will **not** be dropped.
-d. **Data Loading and Access:** Data is loaded and accessed by external systems; Hive can also load.
-e. **Operations:** External tables cannot be `TRUNCATED`, and you cannot create `CTAS`.
+---
 
-**Conversion between Table Types:**
-We can change the table from external to managed or vice versa using table properties option.
-**(Important)** `ALTER TABLE saravanakumar SET TBLPROPERTIES('EXTERNAL'='FALSE');`
+## 🧾 Managed Table (Default - Internal)
 
-`SET hive.cli.print.current.db=true;`
-`SET hive.cli.print.header=true;`
+A **Managed Table** in Hive is **controlled entirely by Hive**—both metadata and data. It's ideal when Hive is the only system accessing the data.
 
-`DROP DATABASE IF EXISTS retail CASCADE;`
-`CREATE DATABASE retail;`
-`USE retail;`
+### ✅ Key Characteristics:
 
-`DROP DATABASE IF EXISTS retail_raw;`
-`DROP DATABASE IF EXISTS retail_curated;`
-`DROP DATABASE IF EXISTS retail_analytics;`
+* **Syntax:**
 
-`CREATE DATABASE retail_raw;`
-`CREATE DATABASE retail_curated;`
-`CREATE DATABASE retail_analytics;`
+  ```sql
+  CREATE TABLE table_name (column_name data_type);
+  ```
 
-`CREATE TABLE retail_raw.txnrecords (txnno INT, txndate STRING, custno INT, amount DOUBLE, category STRING, product STRING, city STRING, state STRING, spendby STRING)`
-`ROW FORMAT DELIMITED FIELDS TERMINATED BY ','`
-`STORED AS TEXTFILE;`
+* **Location:**
+  Automatically managed by Hive; location can be specified, but usually not needed.
 
-**Position to Naming Convention (EL - Extract Load):**
-`LOAD DATA LOCAL INPATH '/home/hduser/hive/data/txns' INTO TABLE retail_raw.txnrecords;`
+* **Behavior on DROP:**
+  Drops both the **table definition** and the **data**.
 
-Example Data:
-`00000000,06-26-2011,4007024,040.33,Exercise & Fitness,Cardio Machine Accessories,Clarksville,Tennessee,credit`
+* **Data Access:**
+  Data is read/written directly by Hive.
 
-`SELECT * FROM retail_raw.txnrecords LIMIT 10;`
-`SELECT * FROM retail_raw.txnrecords ORDER BY txnno LIMIT 10;`
+* **Allowed Operations:**
 
-`CREATE EXTERNAL TABLE retail_curated.externaltxnrecords (`
-  `txnno INT,`
-  `custno INT,`
-  `amount DOUBLE,`
-  `category STRING,`
-  `product STRING,`
-  `city STRING,`
-  `state STRING,`
-  `spendby STRING,`
-  `txndate DATE,`
-  `txnts TIMESTAMP`
-`)`
-`ROW FORMAT DELIMITED FIELDS TERMINATED BY ','`
-`STORED AS TEXTFILE`
-`LOCATION '/user/hduser/hiveexternaldata';`
+  * Supports `TRUNCATE`
+  * Supports `CTAS` (Create Table As Select)
 
-**Naming to Naming Convention (ETL - Extract Transform Load):**
-`INSERT INTO TABLE retail_curated.externaltxnrecords (txnno, custno, amount, category, product, city, state, spendby, txndate, txnts)`
-`SELECT`
-  `txnno,`
-  `custno,`
-  `amount,`
-  `category,`
-  `product,`
-  `city,`
-  `state,`
-  `spendby,`
-  `FROM_UNIXTIME(UNIX_TIMESTAMP(txndate, 'MM-dd-yyyy'), 'yyyy-MM-dd'),`
-  `FROM_UNIXTIME(UNIX_TIMESTAMP(txndate, 'MM-dd-yyyy'))`
-`FROM retail_raw.txnrecords;`
+---
 
-**Date/Time Conversion Example:**
-SOURCE UNIX HIVE
-`tamil -> translator (english) -> hindi/malayalam`
-`06-26-2011 -> SOMENUMBER (1309026600) -> 2011-06-26`
+## 🌐 External Table (Referenced - External Data)
 
-`SELECT FROM_UNIXTIME(UNIX_TIMESTAMP('06-26-2011','MM-dd-yyyy'),'yyyy-MM-dd');`
-`SELECT FROM_UNIXTIME(UNIX_TIMESTAMP('06-26-2011','MM-dd-yyyy'),'yyyy-MM-dd HH:mm:ss');`
+An **External Table** allows Hive to reference data **stored outside its control**, meaning the data **remains untouched** even if the table is dropped.
 
-**Temporary Table:**
-1. A temporary table is a session table, i.e., the life of the table will be available until the session is active.
-2. We use this table for some temporary or interim purposes, where if we require the table to be dropped after it is used.
-3. Temp table can be created as managed or external too.
-4. When we quit out of Hive, this temp table will be dropped automatically.
-`DROP TABLE temptable;`
-`QUIT;`
+### ✅ Key Characteristics:
+
+* **Syntax:**
+
+  ```sql
+  CREATE EXTERNAL TABLE table_name (column_name data_type)
+  LOCATION '/external/path/';
+  ```
+
+* **Location:**
+  Must be explicitly defined by the user.
+
+* **Behavior on DROP:**
+  Drops only the **table metadata**; data remains safe.
+
+* **Data Access:**
+  Data can be loaded externally; Hive just queries it.
+
+* **Allowed Operations:**
+
+  * Cannot be `TRUNCATED`
+  * `CTAS` not allowed
+
+---
+
+## 🔁 Switching Between Table Types
+
+You can **convert** between managed and external table types using `TBLPROPERTIES`:
+
+```sql
+ALTER TABLE table_name SET TBLPROPERTIES('EXTERNAL'='FALSE');  -- to convert to managed
+```
+
+---
+
+# 🧱 Hive Environment Setup & Best Practices
+
+### 📌 Setup Hive CLI Environment
+
+```sql
+SET hive.cli.print.current.db = true;
+SET hive.cli.print.header = true;
+```
+
+---
+
+### 🏗️ Create & Organize Databases
+
+```sql
+-- Clean up old if any
+DROP DATABASE IF EXISTS retail CASCADE;
+
+-- Create Main Database
+CREATE DATABASE retail;
+USE retail;
+
+-- Multi-Layered Architecture
+DROP DATABASE IF EXISTS retail_raw;
+DROP DATABASE IF EXISTS retail_curated;
+DROP DATABASE IF EXISTS retail_analytics;
+
+CREATE DATABASE retail_raw;
+CREATE DATABASE retail_curated;
+CREATE DATABASE retail_analytics;
+```
+
+---
+
+## 📥 Managed Table Example – `retail_raw`
+
+```sql
+CREATE TABLE retail_raw.txnrecords (
+  txnno     INT,
+  txndate   STRING,
+  custno    INT,
+  amount    DOUBLE,
+  category  STRING,
+  product   STRING,
+  city      STRING,
+  state     STRING,
+  spendby   STRING
+)
+ROW FORMAT DELIMITED 
+FIELDS TERMINATED BY ',' 
+STORED AS TEXTFILE;
+```
+
+### 📌 Load Data (EL: Extract & Load)
+
+```sql
+LOAD DATA LOCAL INPATH '/home/hduser/hive/data/txns'
+INTO TABLE retail_raw.txnrecords;
+```
+
+Example Row:
+
+```
+00000000,06-26-2011,4007024,040.33,Exercise & Fitness,Cardio Machine Accessories,Clarksville,Tennessee,credit
+```
+
+---
+
+## 📊 Query Data
+
+```sql
+SELECT * FROM retail_raw.txnrecords LIMIT 10;
+SELECT * FROM retail_raw.txnrecords ORDER BY txnno LIMIT 10;
+```
+
+---
+
+## 🌐 External Table Example – `retail_curated`
+
+```sql
+CREATE EXTERNAL TABLE retail_curated.externaltxnrecords (
+  txnno     INT,
+  custno    INT,
+  amount    DOUBLE,
+  category  STRING,
+  product   STRING,
+  city      STRING,
+  state     STRING,
+  spendby   STRING,
+  txndate   DATE,
+  txnts     TIMESTAMP
+)
+ROW FORMAT DELIMITED 
+FIELDS TERMINATED BY ',' 
+STORED AS TEXTFILE
+LOCATION '/user/hduser/hiveexternaldata';
+```
+
+---
+
+## 🔁 Insert Transformed Data (ETL: Extract, Transform, Load)
+
+```sql
+INSERT INTO TABLE retail_curated.externaltxnrecords (
+  txnno, custno, amount, category, product, city, state, spendby, txndate, txnts
+)
+SELECT
+  txnno,
+  custno,
+  amount,
+  category,
+  product,
+  city,
+  state,
+  spendby,
+  FROM_UNIXTIME(UNIX_TIMESTAMP(txndate, 'MM-dd-yyyy'), 'yyyy-MM-dd'),
+  FROM_UNIXTIME(UNIX_TIMESTAMP(txndate, 'MM-dd-yyyy'))
+FROM retail_raw.txnrecords;
+```
+
+---
+
+## 📅 Date/Time Conversion Logic
+
+**Conceptual Flow:**
+
+```
+06-26-2011 (String) → UNIX TIMESTAMP (e.g., 1309026600) → yyyy-MM-dd Format
+```
+
+### Examples:
+
+```sql
+SELECT FROM_UNIXTIME(UNIX_TIMESTAMP('06-26-2011','MM-dd-yyyy'), 'yyyy-MM-dd');
+
+SELECT FROM_UNIXTIME(UNIX_TIMESTAMP('06-26-2011','MM-dd-yyyy'), 'yyyy-MM-dd HH:mm:ss');
+```
+
+---
+
+## ⚡ Temporary Tables in Hive
+
+* Temporary tables exist **only during the session**.
+* Useful for **interim** data processing or testing.
+* Can be **managed or external**.
+* Automatically dropped when session ends.
+
+```sql
+DROP TABLE temptable;
+QUIT;
+```
+
+
