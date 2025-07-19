@@ -187,6 +187,10 @@ SELECT
   FROM_UNIXTIME(UNIX_TIMESTAMP(txndate, 'MM-dd-yyyy'), 'yyyy-MM-dd'),
   FROM_UNIXTIME(UNIX_TIMESTAMP(txndate, 'MM-dd-yyyy'))
 FROM retail_raw.txnrecords;
+
+
+SELECT * FROM retail_curated.externaltxnrecords LIMIT 10;
+
 ```
 
 ---
