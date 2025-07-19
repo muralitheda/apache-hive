@@ -100,7 +100,7 @@ select * from db_retail_raw.tbl_retail_raw_staging limit 5;
 > *External table so other systems can access.*
 
 ```sql
-hadoop fs -rm -r /user/hduser/retaildata_curated
+$ hadoop fs -rm -r /user/hduser/retaildata_curated
 
 create external table db_retail_curated.tbl_retail_curated_final (
   record_id int, 
