@@ -149,6 +149,11 @@ SELECT * FROM retail_raw.txnrecords ORDER BY txnno LIMIT 10;
 ## 🌐 External Table Example – `retail_curated`
 
 ```sql
+
+DROP TABLE IF EXISTS retail_curated.externaltxnrecords;
+
+$ hadoop fs -rm -r /user/hduser/hiveexternaldata
+
 CREATE EXTERNAL TABLE retail_curated.externaltxnrecords (
   txnno     INT,
   custno    INT,
