@@ -78,6 +78,18 @@ SELECT id, fname, lname, prof, age FROM raw_customer_data;
 
 -- View partitions
 SHOW PARTITIONS curated_customer_part_dyn;
+
+-- Verify the HDFS location files
+!hadoop fs -ls -R -h /user/hduser/retail_demo/curated_customer_part_dyn;
+!hadoop fs -ls -R -h /user/hduser/retail_demo/curated_customer_part_dyn/prof=Writer/age=57/000000_0;
+
+-- Verify the execution plan of a query
+SELECT * FROM curated_customer_part_dyn WHERE prof = 'Accountant';
+
+EXPLAIN  SELECT * FROM curated_customer_part_dyn WHERE prof = 'Accountant';
+EXPLAIN EXTENDED SELECT * FROM curated_customer_part_dyn WHERE prof = 'Accountant';
+EXPLAIN FORMATTED SELECT * FROM curated_customer_part_dyn WHERE prof = 'Accountant';
+
 ```
 
 
