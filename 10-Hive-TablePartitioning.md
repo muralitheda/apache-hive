@@ -1,4 +1,5 @@
-## Table Partitioning in Hive
+
+## 🧩 Table Partitioning in Hive
 
 ### Overview
 
@@ -6,28 +7,40 @@ Partitioning is the horizontal division of data into smaller parts based on colu
 
 In Hive:
 
-* Each partition is implemented as a subfolder under the table directory.
-* This structure allows for better data organization and performance improvements.
-* Queries can skip scanning unneeded partitions (partition pruning).
-
-### ✅ Advantages of Hive Partitioning
-
-* Distributes execution load horizontally.
-* Enables faster query execution with reduced data scanning.
-* Avoids full table scans.
-
-### ❌ Disadvantages
-
-* May create too many small partitions (i.e., too many directories).
-* Too many partitions can degrade performance and increase metadata management overhead.
+* Each partition is a **subfolder under the table directory**.
+* This helps in **better organization and efficient data retrieval**.
+* Hive applies **partition pruning** to scan only relevant partitions.
 
 ---
 
-### 📘 Example: Table Creation and Loading
+### ✅ Advantages of Hive Partitioning
+
+* Efficient execution by **skipping irrelevant partitions**.
+* Helps **scale horizontally** and manage large datasets.
+* Improves query performance by reducing full table scans.
+
+---
+
+### ❌ Disadvantages
+
+* Too many partitions = too many HDFS directories.
+* Excessive partitions can slow down performance and **increase catalog overhead**.
+
+---
+
+### 📘 Base Table Creation and Load
 
 ```sql
--- Create a raw base table
-CREATE TABLE raw_table (
+-- Enable useful Hive settings
+SET hive.cli.print.current.db = true;
+SET hive.cli.print.header = true;
+
+-- Create and use demo database
+CREATE DATABASE IF NOT EXISTS retail_demo;
+USE retail_demo;
+
+-- Create raw base table
+CREATE TABLE raw_customer_data (
   id INT,
   fname STRING,
   lname STRING,
@@ -36,13 +49,13 @@ CREATE TABLE raw_table (
 )
 ROW FORMAT DELIMITED FIELDS TERMINATED BY ',';
 
--- Load data into the raw table
-LOAD DATA LOCAL INPATH '/home/hduser/hive/data/custs' INTO TABLE raw_table;
+-- Load data
+LOAD DATA LOCAL INPATH '/home/hduser/hive/data/custs' INTO TABLE raw_customer_data;
 ```
 
-### 🔁 Dynamic Partitioning Example
+---
 
-> 💡 Can Hive convert a SQL to a MapReduce job, submit to YARN, read from one Hive table, and dynamically create partitions (as folders) in the target table based on source data?
+### 🔁 Dynamic Partitioning Example
 
 ```sql
 -- Enable dynamic partitioning
@@ -50,36 +63,22 @@ SET hive.exec.dynamic.partition.mode=nonstrict;
 SET hive.exec.max.dynamic.partitions=10000;
 SET hive.exec.max.dynamic.partitions.pernode=10000;
 
--- Create external partitioned table
-CREATE EXTERNAL TABLE curated_part_tbl4 (
+-- Create dynamic partitioned external table
+CREATE EXTERNAL TABLE curated_customer_part_dyn (
   id INT,
   fname STRING,
   lname STRING
 )
 PARTITIONED BY (prof STRING, age INT)
 ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
-LOCATION '/user/hduser/curated_part_tbl4';
+LOCATION '/user/hduser/retail_demo/curated_customer_part_dyn';
 
--- Insert data dynamically into partitioned table
-INSERT INTO curated_part_tbl4 PARTITION(prof, age)
-SELECT id, fname, lname, prof, age FROM raw_table;
+-- Load partitions dynamically
+INSERT INTO curated_customer_part_dyn PARTITION(prof, age)
+SELECT id, fname, lname, prof, age FROM raw_customer_data;
 
 -- View partitions
-SHOW PARTITIONS curated_part_tbl4;
-```
-
-#### ❓ Interview Question:
-
-> How to drop both metadata and data for an external Hive table?
-
-```sql
--- Method 1
-ALTER TABLE curated_part_tbl4 SET TBLPROPERTIES('EXTERNAL'='FALSE');
-DROP TABLE curated_part_tbl4;
-
--- Method 2
-DROP TABLE curated_part_tbl4;
-DFS -rm -r /user/hduser/curated_part_tbl4;
+SHOW PARTITIONS curated_customer_part_dyn;
 ```
 
 ---
@@ -87,75 +86,74 @@ DFS -rm -r /user/hduser/curated_part_tbl4;
 ### 📘 Static Partitioning Example
 
 ```sql
--- Static partition load
+-- Reuse partition settings
 SET hive.exec.dynamic.partition.mode=nonstrict;
-SET hive.exec.max.dynamic.partitions=10000;
-SET hive.exec.max.dynamic.partitions.pernode=10000;
 
-CREATE EXTERNAL TABLE curated_part_tbl5 (
+-- Create static partitioned external table
+CREATE EXTERNAL TABLE curated_customer_part_static (
   id INT,
   fname STRING,
   lname STRING
 )
 PARTITIONED BY (prof STRING, age INT)
 ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
-LOCATION '/user/hduser/curated_part_tbl5';
+LOCATION '/user/hduser/retail_demo/curated_customer_part_static';
 
--- Insert into specific partitions
-INSERT INTO curated_part_tbl5 PARTITION(prof='Pilot', age=35)
-SELECT id, fname, lname FROM raw_table WHERE prof='Pilot' AND age=35;
+-- Insert into a specific static partition
+INSERT INTO curated_customer_part_static PARTITION(prof='Pilot', age=35)
+SELECT id, fname, lname FROM raw_customer_data WHERE prof='Pilot' AND age=35;
 
--- Overwrite partition data
-INSERT OVERWRITE TABLE curated_part_tbl5 PARTITION(prof='Pilot', age=35)
-SELECT id, fname, lname FROM raw_table WHERE prof='Pilot' AND age=35;
+-- Overwrite existing partition
+INSERT OVERWRITE TABLE curated_customer_part_static PARTITION(prof='Pilot', age=35)
+SELECT id, fname, lname FROM raw_customer_data WHERE prof='Pilot' AND age=35;
 
--- Local export
+-- Export partition locally
 INSERT OVERWRITE LOCAL DIRECTORY '/home/hduser/customer_prof_Teacher_age_71'
 ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
-SELECT id, fname, lname, age, prof FROM raw_table WHERE prof='Teacher' AND age=71;
+SELECT id, fname, lname, age, prof FROM raw_customer_data WHERE prof='Teacher' AND age=71;
 
--- Load data from file
+-- Load exported data back into Hive
 LOAD DATA LOCAL INPATH '/home/hduser/customer_prof_Teacher_age_71/customer_prof_Teacher_age_71.csv'
-OVERWRITE INTO TABLE curated_part_tbl5 PARTITION(prof='Teacher', age=71);
+OVERWRITE INTO TABLE curated_customer_part_static PARTITION(prof='Teacher', age=71);
 
--- Regrouping
-INSERT OVERWRITE TABLE curated_part_tbl5 PARTITION(prof='Pilot_Teacher', age=50)
-SELECT id, fname, lname FROM raw_table WHERE prof IN ('Pilot','Teacher') AND age=50;
+-- Group two professions into one partition
+INSERT OVERWRITE TABLE curated_customer_part_static PARTITION(prof='Pilot_Teacher', age=50)
+SELECT id, fname, lname FROM raw_customer_data WHERE prof IN ('Pilot','Teacher') AND age=50;
 ```
 
-#### ❓ Interview Question:
+---
 
-> How to drop the external table and its data?
+### ❓ Interview Question: Drop External Table and Its Data
 
 ```sql
--- Method 1
-ALTER TABLE curated_part_tbl5 SET TBLPROPERTIES('EXTERNAL'='FALSE');
-DROP TABLE curated_part_tbl5;
+-- Option 1: Convert to managed and drop
+ALTER TABLE curated_customer_part_static SET TBLPROPERTIES('EXTERNAL'='FALSE');
+DROP TABLE curated_customer_part_static;
 
--- Method 2
-DROP TABLE curated_part_tbl5;
-DFS -rm -r /user/hduser/curated_part_tbl5;
+-- Option 2: Drop and manually clean HDFS
+DROP TABLE curated_customer_part_static;
+DFS -rm -r /user/hduser/retail_demo/curated_customer_part_static;
 ```
 
 ---
 
 ### 📊 Static vs Dynamic Partitioning Comparison
 
-| Feature                       | Static Partitions                | Dynamic Partitions                  |
-| ----------------------------- | -------------------------------- | ----------------------------------- |
-| Partition Value Determination | Manually specified               | Automatically determined by Hive    |
-| Data Loading Speed            | Generally faster                 | Can be slower for large datasets    |
-| Control                       | More control over data placement | Less control over data placement    |
-| Flexibility                   | Less flexible                    | More flexible                       |
-| Use Cases                     | When partition values are known  | When partition values are not known |
+| Feature                   | Static Partitions               | Dynamic Partitions                 |
+| ------------------------- | ------------------------------- | ---------------------------------- |
+| Partition Value Specified | Manually in query               | Derived from data                  |
+| Performance               | Generally faster                | Slower with high partition volume  |
+| Control                   | High (explicit partition logic) | Low (data-driven)                  |
+| Flexibility               | Limited                         | Highly flexible                    |
+| Use Cases                 | Known partition keys            | Unknown or changing partition keys |
 
 ---
 
-### 🧰 Additional Partitioning Options
+### 🧰 Example: Date & Region-Based Partitioning
 
 ```sql
--- Create a partitioned table by date and region
-CREATE TABLE retail.txnrecsbydtreg (
+-- Create new partitioned table
+CREATE TABLE retail_demo.txn_data_by_date_region (
   txnno INT,
   txndate STRING,
   custno INT,
@@ -172,55 +170,69 @@ STORED AS TEXTFILE;
 
 -- Load partitions
 LOAD DATA LOCAL INPATH '/home/hduser/hive/data/txns_20201212_PADE'
-OVERWRITE INTO TABLE retail.txnrecsbydtreg
+OVERWRITE INTO TABLE retail_demo.txn_data_by_date_region
 PARTITION (datadt='2020-12-12', region='PADE');
 
 LOAD DATA LOCAL INPATH '/home/hduser/hive/data/txns_20201212_NY'
-OVERWRITE INTO TABLE retail.txnrecsbydtreg
+OVERWRITE INTO TABLE retail_demo.txn_data_by_date_region
 PARTITION (datadt='2020-12-12', region='NY');
 
--- View partition directory
-DFS -ls -R /user/hive/warehouse/retail.db/txnrecsbydtreg/datadt=2020-12-12/;
+-- Show partition folders
+DFS -ls -R /user/hive/warehouse/retail_demo.db/txn_data_by_date_region/datadt=2020-12-12/;
 
--- Query by partition
-SELECT COUNT(1) FROM retail.txnrecsbydtreg WHERE datadt='2020-12-12' AND region IN ('PADE', 'NY');
+-- Query using partition filter
+SELECT COUNT(1) FROM retail_demo.txn_data_by_date_region
+WHERE datadt='2020-12-12' AND region IN ('PADE', 'NY');
 
--- View partitions
-SHOW PARTITIONS retail.txnrecsbydtreg;
+-- View all partitions
+SHOW PARTITIONS retail_demo.txn_data_by_date_region;
 ```
 
-#### ➕ Add New Partitions
+---
+
+### ➕ Manage Partitions
+
+#### Add Partition
 
 ```sql
-ALTER TABLE retail.txnrecsbydtreg ADD IF NOT EXISTS
+ALTER TABLE retail_demo.txn_data_by_date_region ADD IF NOT EXISTS
 PARTITION (datadt='2020-12-13', region='PADE')
-LOCATION '/user/hive/warehouse/retail.db/txnrecsbydtreg/datadt=2020-12-13/region=PADE/';
+LOCATION '/user/hive/warehouse/retail_demo.db/txn_data_by_date_region/datadt=2020-12-13/region=PADE/';
 ```
 
-#### ✏️ Rename Partitions
+#### Rename Partition
 
 ```sql
-ALTER TABLE retail.txnrecsbydtreg PARTITION (datadt='2020-12-13', region='PADE')
+ALTER TABLE retail_demo.txn_data_by_date_region PARTITION (datadt='2020-12-13', region='PADE')
 RENAME TO PARTITION (datadt='2020-12-14', region='NY');
 ```
 
-#### ❌ Drop Partitions
+#### Drop Partition
 
 ```sql
-ALTER TABLE retail.txnrecsbydtreg DROP PARTITION (datadt='2020-12-14', region='NY');
+ALTER TABLE retail_demo.txn_data_by_date_region DROP PARTITION (datadt='2020-12-14', region='NY');
 ```
 
-#### 🔄 Automate Partition Discovery
+---
+
+### 🔄 Repair Partition Metadata (MSCK REPAIR)
 
 ```bash
+-- Copy file and create partition folder
 !cp /home/hduser/hive/data/txns /home/hduser/hive/data/txns_20201214_PADE
-DFS -mkdir -p /user/hive/warehouse/retail.db/txnrecsbydtreg/datadt=2020-12-14/region=PADE/
-DFS -put /home/hduser/hive/data/txns_20201214_PADE /user/hive/warehouse/retail.db/txnrecsbydtreg/datadt=2020-12-14/region=PADE/
+DFS -mkdir -p /user/hive/warehouse/retail_demo.db/txn_data_by_date_region/datadt=2020-12-14/region=PADE/
+DFS -put /home/hduser/hive/data/txns_20201214_PADE /user/hive/warehouse/retail_demo.db/txn_data_by_date_region/datadt=2020-12-14/region=PADE/
 
--- Repair metadata
+-- Repair metadata to recognize new partitions
 SET hive.msck.path.validation=ignore;
-MSCK REPAIR TABLE retail.txnrecsbydtreg;
+MSCK REPAIR TABLE retail_demo.txn_data_by_date_region;
 ```
 
-> ℹ️ Partitions not in metastore: txnrecsbydtreg\:datadt=2020-12-14/region=PADE
-> ✅ Repair: Added partition to metastore txnrecsbydtreg\:datadt=2020-12-14/region=PADE
+---
+
+### 🔎 Notes on Metadata & HDFS Overhead
+
+* **Metadata Overhead**: Each partition adds entries in the Hive Metastore. Too many can slow down planning and queries.
+* **HDFS Overhead**: Each partition = directory in HDFS. Too many small files or directories cause NameNode memory issues and slow directory listing.
+* **Best Practice**: Use low-cardinality fields (e.g., date, region) for partitioning. Avoid high-cardinality fields like user ID or timestamps.
+
