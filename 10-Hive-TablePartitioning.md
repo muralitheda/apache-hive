@@ -123,12 +123,14 @@ ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
 SELECT id, fname, lname, age, prof FROM raw_customer_data WHERE prof='Teacher' AND age=71;
 
 -- Load exported data back into Hive
-LOAD DATA LOCAL INPATH '/home/hduser/customer_prof_Teacher_age_71/customer_prof_Teacher_age_71.csv'
+LOAD DATA LOCAL INPATH '/home/hduser/customer_prof_Teacher_age_71/000000_0'
 OVERWRITE INTO TABLE curated_customer_part_static PARTITION(prof='Teacher', age=71);
 
 -- Group two professions into one partition
 INSERT OVERWRITE TABLE curated_customer_part_static PARTITION(prof='Pilot_Teacher', age=50)
 SELECT id, fname, lname FROM raw_customer_data WHERE prof IN ('Pilot','Teacher') AND age=50;
+
+SHOW PARTITIONS curated_customer_part_static;
 ```
 
 
@@ -138,6 +140,8 @@ SELECT id, fname, lname FROM raw_customer_data WHERE prof IN ('Pilot','Teacher')
 -- Option 1: Convert to managed and drop
 ALTER TABLE curated_customer_part_static SET TBLPROPERTIES('EXTERNAL'='FALSE');
 DROP TABLE curated_customer_part_static;
+
+!hadoop fs -ls /user/hduser/retail_demo/curated_customer_part_static;
 
 -- Option 2: Drop and manually clean HDFS
 DROP TABLE curated_customer_part_static;
@@ -227,10 +231,12 @@ ALTER TABLE retail_demo.txn_data_by_date_region DROP PARTITION (datadt='2020-12-
 !cp /home/hduser/hive/data/txns /home/hduser/hive/data/txns_20201214_PADE
 DFS -mkdir -p /user/hive/warehouse/retail_demo.db/txn_data_by_date_region/datadt=2020-12-14/region=PADE/
 DFS -put /home/hduser/hive/data/txns_20201214_PADE /user/hive/warehouse/retail_demo.db/txn_data_by_date_region/datadt=2020-12-14/region=PADE/
+SHOW PARTITIONS retail_demo.txn_data_by_date_region;
 
 -- Repair metadata to recognize new partitions
 SET hive.msck.path.validation=ignore;
 MSCK REPAIR TABLE retail_demo.txn_data_by_date_region;
+SHOW PARTITIONS retail_demo.txn_data_by_date_region;
 ```
 
 ### 🔎 Notes on Metadata & HDFS Overhead
