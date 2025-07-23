@@ -220,14 +220,81 @@ SELECT FROM_UNIXTIME(UNIX_TIMESTAMP('06-26-2011','MM-dd-yyyy'), 'yyyy-MM-dd HH:m
 
 ## ⚡ Temporary Tables in Hive
 
-* Temporary tables exist **only during the session**.
-* Useful for **interim** data processing or testing.
-* Can be **managed or external**.
-* Automatically dropped when session ends.
+Here’s an updated, clean example using a **new temporary table** in Hive along with full explanation, including database selection and internal behavior:
+
+---
+
+### ✅ Step-by-Step: Create & Use a Temporary Table in Hive
+
+#### 1. **Select or Create Database**
 
 ```sql
-DROP TABLE temptable;
-QUIT;
+CREATE DATABASE IF NOT EXISTS retail_temp_demo;
+USE retail_temp_demo;
 ```
+
+---
+
+#### 2. **Create a New Temporary Table**
+
+```sql
+CREATE TEMPORARY TABLE temp_summary_txn (
+    custno INT,
+    total_amount DOUBLE
+)
+STORED AS ORC;
+```
+
+🔸 This table is:
+
+* **Session-scoped** – it vanishes when the Hive session ends.
+* **Not stored in Hive Metastore** – no metadata persists.
+* **No data written to HDFS** – used only in local/scratch area.
+
+---
+
+#### 3. **Insert Data from Existing Table**
+
+(Assuming `retail_raw.txnrecords` exists)
+
+```sql
+INSERT INTO TABLE temp_summary_txn
+SELECT custno, SUM(amount)
+FROM retail_raw.txnrecords
+GROUP BY custno;
+```
+
+---
+
+#### 4. **Query the Temporary Table**
+
+```sql
+SELECT * FROM temp_summary_txn LIMIT 10;
+```
+
+---
+
+### 💡 Why Use a Temporary Table?
+
+#### ✅ Key Advantages:
+
+* **Session-based**: Auto-deleted when the session ends — no cleanup required.
+* **Fast**: Skips HDFS write/read, useful for staging or intermediate processing.
+* **No Hive Metastore Impact**: Reduces load on catalog and avoids clutter.
+* **Ideal for ETL steps**, testing, and summary aggregations.
+
+---
+
+### 🧠 Internal Notes
+
+| Property              | Behavior                                                              |
+| --------------------- | --------------------------------------------------------------------- |
+| **Persistence**       | Exists only during the session                                        |
+| **Storage Location**  | Temporary local directory (`/tmp/hive/`)                              |
+| **Metadata Handling** | Not stored in Hive Metastore                                          |
+| **Query Speed**       | Faster for reads/writes (no HDFS replication or catalog registration) |
+| **Limitations**       | Cannot be shared across sessions or visible to other users            |
+
+---
 
 
