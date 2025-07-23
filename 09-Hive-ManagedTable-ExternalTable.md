@@ -220,10 +220,6 @@ SELECT FROM_UNIXTIME(UNIX_TIMESTAMP('06-26-2011','MM-dd-yyyy'), 'yyyy-MM-dd HH:m
 
 ## ⚡ Temporary Tables in Hive
 
-Here’s an updated, clean example using a **new temporary table** in Hive along with full explanation, including database selection and internal behavior:
-
----
-
 ### ✅ Step-by-Step: Create & Use a Temporary Table in Hive
 
 #### 1. **Select or Create Database**
@@ -232,8 +228,6 @@ Here’s an updated, clean example using a **new temporary table** in Hive along
 CREATE DATABASE IF NOT EXISTS retail_temp_demo;
 USE retail_temp_demo;
 ```
-
----
 
 #### 2. **Create a New Temporary Table**
 
@@ -251,7 +245,6 @@ STORED AS ORC;
 * **Not stored in Hive Metastore** – no metadata persists.
 * **No data written to HDFS** – used only in local/scratch area.
 
----
 
 #### 3. **Insert Data from Existing Table**
 
@@ -264,7 +257,6 @@ FROM retail_raw.txnrecords
 GROUP BY custno;
 ```
 
----
 
 #### 4. **Query the Temporary Table**
 
@@ -272,7 +264,6 @@ GROUP BY custno;
 SELECT * FROM temp_summary_txn LIMIT 10;
 ```
 
----
 
 ### 💡 Why Use a Temporary Table?
 
@@ -283,7 +274,6 @@ SELECT * FROM temp_summary_txn LIMIT 10;
 * **No Hive Metastore Impact**: Reduces load on catalog and avoids clutter.
 * **Ideal for ETL steps**, testing, and summary aggregations.
 
----
 
 ### 🧠 Internal Notes
 
@@ -295,6 +285,5 @@ SELECT * FROM temp_summary_txn LIMIT 10;
 | **Query Speed**       | Faster for reads/writes (no HDFS replication or catalog registration) |
 | **Limitations**       | Cannot be shared across sessions or visible to other users            |
 
----
 
 
