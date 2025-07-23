@@ -11,7 +11,7 @@ In Hive:
 * This helps in **better organization and efficient data retrieval**.
 * Hive applies **partition pruning** to scan only relevant partitions.
 
----
+
 
 ### ✅ Advantages of Hive Partitioning
 
@@ -19,14 +19,13 @@ In Hive:
 * Helps **scale horizontally** and manage large datasets.
 * Improves query performance by reducing full table scans.
 
----
 
 ### ❌ Disadvantages
 
 * Too many partitions = too many HDFS directories.
 * Excessive partitions can slow down performance and **increase catalog overhead**.
 
----
+
 
 ### 📘 Base Table Creation and Load
 
@@ -53,7 +52,7 @@ ROW FORMAT DELIMITED FIELDS TERMINATED BY ',';
 LOAD DATA LOCAL INPATH '/home/hduser/hive/data/custs' INTO TABLE raw_customer_data;
 ```
 
----
+
 
 ### 🔁 Dynamic Partitioning Example
 
@@ -81,7 +80,6 @@ SELECT id, fname, lname, prof, age FROM raw_customer_data;
 SHOW PARTITIONS curated_customer_part_dyn;
 ```
 
----
 
 ### 📘 Static Partitioning Example
 
@@ -121,7 +119,6 @@ INSERT OVERWRITE TABLE curated_customer_part_static PARTITION(prof='Pilot_Teache
 SELECT id, fname, lname FROM raw_customer_data WHERE prof IN ('Pilot','Teacher') AND age=50;
 ```
 
----
 
 ### ❓ Interview Question: Drop External Table and Its Data
 
@@ -135,7 +132,6 @@ DROP TABLE curated_customer_part_static;
 DFS -rm -r /user/hduser/retail_demo/curated_customer_part_static;
 ```
 
----
 
 ### 📊 Static vs Dynamic Partitioning Comparison
 
@@ -147,7 +143,6 @@ DFS -rm -r /user/hduser/retail_demo/curated_customer_part_static;
 | Flexibility               | Limited                         | Highly flexible                    |
 | Use Cases                 | Known partition keys            | Unknown or changing partition keys |
 
----
 
 ### 🧰 Example: Date & Region-Based Partitioning
 
@@ -188,7 +183,6 @@ WHERE datadt='2020-12-12' AND region IN ('PADE', 'NY');
 SHOW PARTITIONS retail_demo.txn_data_by_date_region;
 ```
 
----
 
 ### ➕ Manage Partitions
 
@@ -213,7 +207,6 @@ RENAME TO PARTITION (datadt='2020-12-14', region='NY');
 ALTER TABLE retail_demo.txn_data_by_date_region DROP PARTITION (datadt='2020-12-14', region='NY');
 ```
 
----
 
 ### 🔄 Repair Partition Metadata (MSCK REPAIR)
 
@@ -227,8 +220,6 @@ DFS -put /home/hduser/hive/data/txns_20201214_PADE /user/hive/warehouse/retail_d
 SET hive.msck.path.validation=ignore;
 MSCK REPAIR TABLE retail_demo.txn_data_by_date_region;
 ```
-
----
 
 ### 🔎 Notes on Metadata & HDFS Overhead
 
