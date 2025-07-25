@@ -190,6 +190,8 @@ Querying with both partition and bucket conditions:
 
 ```sql
 SELECT * FROM retail_analytics.customer_transactions_partitioned_and_bucketed WHERE city='Chennai' AND id=4;
+
+EXPLAIN EXTENDED SELECT * FROM retail_analytics.customer_transactions_partitioned_and_bucketed WHERE city='Chennai' AND id=4; 
 ```
 
 **Explanation**: Hive will first search the partition folder for `city='Chennai'`, and then, within that partition, it will look inside the relevant bucket to find `(4,David)`.
