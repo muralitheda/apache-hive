@@ -1,10 +1,8 @@
------
 
 ## Bucketed Table: Definition and Benefits
 
 Bucketing is a technique used to **divide, group, or distribute data into a defined number of files based on one or more columns with high cardinality**.
 
------
 
 ## Advantages of Bucketing 🚀
 
@@ -16,7 +14,6 @@ Bucketing offers several key benefits:
 
 **Example**: Columns like `customer_id` or `product_id` in a sales table are good candidates for bucketing due to their high cardinality.
 
------
 
 ## How Bucketing Works ⚙️
 
@@ -36,7 +33,7 @@ Bucketing offers several key benefits:
 
 2.  **Separate Files**: Each bucket is stored as a separate file within the partition directories (if partitioning is also applied).
 
------
+
 
 ## Bucketing Concepts & Join Improvement
 
@@ -54,7 +51,7 @@ For optimal join performance using bucketing (specifically SMB join), adhere to 
 1.  **Same Bucket Columns**: Both tables involved in the join must use the **same bucket columns**.
 2.  **Same Number of Buckets**: Both tables must be created with the **same number of buckets**.
 
------
+
 
 ## Partitioning vs. Bucketing: A Comparison 📊
 
@@ -66,7 +63,7 @@ For optimal join performance using bucketing (specifically SMB join), adhere to 
 | **Storage Structure** | Creates folders                                    | Creates files                                      |
 | **Performance Impact** | Improves `WHERE`/`FILTER` clause performance       | Improves `JOIN` and `WHERE`/`FILTER` clause performance |
 
------
+
 
 ## Syntax for Creating a Bucketed Table 📝
 
@@ -77,7 +74,7 @@ CLUSTERED BY (col_name data_type [COMMENT col_comment], ...) [SORTED BY (col_nam
 INTO N BUCKETS;
 ```
 
------
+
 
 ## Examples of Bucketing in Action 🧑‍💻
 
@@ -161,7 +158,7 @@ select * from sample_bucket where id=3;
 
 **Explanation**: Out of 9 rows, Hive (mappers) filtered 1 file (bucket) out of 3 files (buckets) and performed 2 searches out of 3 rows to find 1 row as output because the data is sorted within the bucket.
 
------
+
 
 ### Table with Both Partition & Buckets
 
@@ -263,8 +260,6 @@ dfs -cat /user/hive/warehouse/retail.db/sample_part_bucket/city=mum/000002_0;
 8,h
 ```
 
------
-
 ## Interview Questions on Bucketing 🧠
 
 ### 1\. Can we modify the number of buckets after some time due to data volume increase without changing the entire dataset?
@@ -318,7 +313,6 @@ alter table retail.sample_bucket1_tmp rename to sample_bucket1; # Rename to repl
           * 160 buckets (256 MB/bucket) is often considered the best choice as it aligns with the 256 MB per reducer guideline, though running 160 reducers might be too many for some clusters, leading to overhead.
           * If each bucket contains approximately 2GB of data, this implies too few buckets and might lead to large file sizes, negating some benefits.
 
------
 
 ## Bucketing Improves Join Performance: Example 🤝
 
