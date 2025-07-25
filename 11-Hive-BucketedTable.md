@@ -419,6 +419,7 @@ customer_id_v1 product_name_v1 order_city_v1 customer_id_v2 product_name_v2 orde
 In this scenario, because `orders_bucketed_by_customer_id_v1` and `orders_bucketed_by_customer_id_v2` have the same bucket column (`customer_id`) and the same number of buckets (`3`), Hive can perform an optimized **Sort Merge Bucket Join**. This means that instead of a full shuffle, it can join corresponding buckets directly, leading to significant performance gains.
 
 ```sql
+--Explain Plain Long
 EXPLAIN EXTENDED SELECT
     t1.customer_id AS customer_id_v1,
     t1.product_name AS product_name_v1,
@@ -433,8 +434,24 @@ JOIN
 ON
     t1.customer_id = t2.customer_id;
     
+--Explain Plain Short
+EXPLAIN  SELECT
+    t1.customer_id AS customer_id_v1,
+    t1.product_name AS product_name_v1,
+    t1.order_city AS order_city_v1,
+    t2.customer_id AS customer_id_v2,
+    t2.product_name AS product_name_v2,
+    t2.order_city AS order_city_v2
+FROM
+    retail_analytics.orders_bucketed_by_customer_id_v1 t1
+JOIN
+    retail_analytics.orders_bucketed_by_customer_id_v2 t2
+ON
+    t1.customer_id = t2.customer_id;
     
-EXPLAIN EXTENDED SSELECT
+  
+--Explain Plain long   
+EXPLAIN EXTENDED SELECT
     t1.customer_id AS customer_id_v1,
     t1.product_name AS product_name_v1,
     t1.order_city AS order_city_v1,
