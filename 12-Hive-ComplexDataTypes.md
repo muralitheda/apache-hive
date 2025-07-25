@@ -107,6 +107,12 @@ A common modern practice is to load raw data into a staging table (often in text
 First, let's create and use a dedicated database for our analytics tables.
 
 ```sql
+
+-- Enable useful Hive settings
+SET hive.cli.print.current.db = true;
+SET hive.cli.print.header = true;
+
+
 -- Create the database if it doesn't exist
 CREATE DATABASE IF NOT EXISTS data_lakehouse;
 USE data_lakehouse;
