@@ -160,9 +160,15 @@ When querying a specific ID:
 
 ```sql
 SELECT * FROM retail_analytics.customer_transactions_bucketed_by_id WHERE id=3;
+
+EXPLAIN EXTENDED SELECT * FROM retail_analytics.customer_transactions_bucketed_by_id WHERE id=3;
 ```
 
-**Explanation**: Out of 9 rows, Hive (mappers) filtered 1 file (bucket) out of 3 files (buckets) and performed 2 searches out of 3 rows to find 1 row as output because the data is sorted within the bucket.
+**Explanation**:  
+Out of 9 rows,  
+Hive (mappers) filtered 1 file (bucket) out of 3 files (buckets) and   
+performed 2 searches out of 3 rows to  
+find 1 row as output because the data is sorted within the bucket.  
 
 ### Table with Both Partition & Buckets
 
