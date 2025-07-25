@@ -70,6 +70,11 @@ INTO N BUCKETS;
 First, let's ensure we have a database to work with:
 
 ```sql
+
+-- Enable useful Hive settings
+SET hive.cli.print.current.db = true;
+SET hive.cli.print.header = true;
+
 -- Create the database if it doesn't exist
 CREATE DATABASE IF NOT EXISTS retail_analytics;
 USE retail_analytics;
