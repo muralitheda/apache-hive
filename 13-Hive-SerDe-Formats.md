@@ -72,7 +72,7 @@ LOCATION '/user/hive/warehouse/raw_landing_zone.db/agents_json_raw_external'; --
 ### 4\. Load Data into the External Table
 
 ```bash
-LOAD DATA LOCAL INPATH '~/hive/data/agents.json' OVERWRITE INTO TABLE raw_landing_zone.agents_json_raw_external;
+LOAD DATA LOCAL INPATH 'file:/home/hduser/hive/data/agents.json' OVERWRITE INTO TABLE raw_landing_zone.agents_json_raw_external;
 ```
 
 ### 5\. Show Create Table (Verification)
