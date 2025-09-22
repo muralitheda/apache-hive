@@ -1,7 +1,12 @@
 
 # 🗂️ Managed vs External Tables in Hive
 
----
+| Feature | Managed (Internal) Table | External Table |
+| :--- | :--- | :--- |
+| **Data Ownership** | Hive has full ownership and control of both the metadata and the data files. | Hive only manages the metadata. The data is owned and controlled by the user. |
+| **Data Deletion** | Dropping the table deletes both the metadata from the Hive Metastore and the data files from HDFS. | Dropping the table only deletes the metadata. The data files remain untouched in their original location. |
+| **Data Location** | Data is stored within Hive's default warehouse directory, typically `/user/hive/warehouse/`. | The user specifies the data's location using the `LOCATION` clause, which can be any valid HDFS or external storage path. |
+| **Ideal Use Case** | Use for temporary or intermediate data where Hive is the sole application accessing the data. | Use for data that needs to be shared with other tools (e.g., Spark, Pig) or needs to persist even if the table is dropped. |
 
 ## 🧾 Managed Table (Default - Internal)
 
