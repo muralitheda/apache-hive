@@ -50,6 +50,9 @@ When you write and submit a query in Hive, it undergoes multiple internal steps:
 
 4. **Flexible parsing, cleansing, and transformation**  
    - Can parse and transform data at load time or query time.
+   - Hive, which primarily uses a **schema-on-read** approach, can perform parsing and transformation at both query time and load time, depending on the file format and method used.
+     - * **Query-Time Parsing**: This is Hive's default behavior, where raw data loaded into a table (e.g., as a `TEXTFILE`) is not parsed or validated until a `SELECT` query is run. The query engine's SerDe (Serializer/Deserializer) reads the schema from the Metastore and parses the data on-the-fly to execute the query. 
+     - * **Load-Time Parsing**: This occurs when data is loaded into optimized, structured file formats like **ORC** or **Parquet** using `INSERT INTO ... SELECT ...`. In this case, a Hive job reads and parses the source data, validates it against the destination table's schema, and physically transforms it into the columnar format during the "load" process itself.
 
 5. **Supports iterative workloads**  
    - Refine transformations, create new derived tables, and repeat until the output meets business requirements.
