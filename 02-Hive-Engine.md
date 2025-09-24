@@ -59,7 +59,7 @@ When you write and submit a query in Hive, it undergoes multiple internal steps:
 
 6. **Partial ACID compliance**  
    - Supports basic transactions (INSERT, DELETE, UPDATE) in transactional tables (using ORC format and Hive 3.x+).
-   - Does **not** fully support complex transactional logic or TCL like traditional OLTP databases.
+   - Does **not** fully support complex transactional logic or TCL(COMMIT/ROLLBACK/SAVEPOINT) like traditional OLTP databases.
 
 7. **Handles both structured and semi-structured data**  
    - Supports formats like Parquet, ORC, Avro, JSON, XML.
