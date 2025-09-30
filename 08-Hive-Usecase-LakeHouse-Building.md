@@ -63,9 +63,9 @@ comment 'retail analytical database'
 location '/user/hduser/db_retail_analytical' 
 with dbproperties ('created_by' = 'murali', 'when created' = '08-JAN-2025');
 
-desc database db_retail_raw;
-desc database db_retail_curated;
-desc database db_retail_analytical;
+desc database extended db_retail_raw;
+desc database extended db_retail_curated;
+desc database extended db_retail_analytical;
 ```
 
 ---
