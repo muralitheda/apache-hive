@@ -97,9 +97,9 @@ CREATE DATABASE retail;
 USE retail;
 
 -- Multi-Layered Architecture
-DROP DATABASE IF EXISTS retail_raw;
-DROP DATABASE IF EXISTS retail_curated;
-DROP DATABASE IF EXISTS retail_analytics;
+DROP DATABASE IF EXISTS retail_raw CASCADE;
+DROP DATABASE IF EXISTS retail_curated CASCADE;
+DROP DATABASE IF EXISTS retail_analytics CASCADE;
 
 CREATE DATABASE retail_raw;
 CREATE DATABASE retail_curated;
