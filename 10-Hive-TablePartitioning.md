@@ -224,7 +224,7 @@ ALTER TABLE retail_demo.txn_data_by_date_region DROP PARTITION (datadt='2020-12-
 ```
 
 
-### 🔄 Repair Partition Metadata (MSCK REPAIR)
+### 🔄 Repair Partition Metadata (MSCK REPAIR = MetaStore Consistency Check)
 
 ```bash
 -- Copy file and create partition folder
