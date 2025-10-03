@@ -319,7 +319,7 @@ ALTER TABLE retail_analytics.customer_transactions_bucketed_by_id_tmp RENAME TO 
 
   * **Scenario 2**: You have 10 lakh (`1,000,000`) customer IDs with 40 GB of data, and you're creating buckets based on `custid`.
 
-      * **Guideline**: 1 bucket = 1 reducer = \~256 MB.
+      * **Guideline**: `1 bucket = 1 reducer` = \~256 MB.
 
       * **Calculation**:
 
