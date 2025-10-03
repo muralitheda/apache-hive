@@ -330,6 +330,7 @@ ALTER TABLE retail_analytics.customer_transactions_bucketed_by_id_tmp RENAME TO 
 
           * 10 buckets (4 GB/bucket) is generally not a good idea as it leads to large bucket files.
           * 80 buckets (512 MB/bucket) is acceptable, as it allows for 80 reducers to run concurrently.
+            * SET hive.exec.reducers.bytes.per.reducer=512m;   -- Reducer size
           * 160 buckets (256 MB/bucket) is often considered the best choice as it aligns with the 256 MB per reducer guideline, though running 160 reducers might be too many for some clusters, leading to overhead.
           * If each bucket contains approximately 2GB of data, this implies too few buckets and might lead to large file sizes, negating some benefits.
 
