@@ -333,6 +333,46 @@ ALTER TABLE retail_analytics.customer_transactions_bucketed_by_id_tmp RENAME TO 
             * SET hive.exec.reducers.bytes.per.reducer=512m;   -- Reducer size
           * 160 buckets (256 MB/bucket) is often considered the best choice as it aligns with the 256 MB per reducer guideline, though running 160 reducers might be too many for some clusters, leading to overhead.
           * If each bucket contains approximately 2GB of data, this implies too few buckets and might lead to large file sizes, negating some benefits.
+```sql
+-- Create Table
+CREATE TABLE default.txns (
+  txn_id        STRING,
+  txn_date      STRING,
+  cust_id       STRING,
+  amount        DOUBLE,
+  category      STRING,
+  subcategory   STRING,
+  city          STRING,
+  state         STRING,
+  payment_type  STRING
+)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+STORED AS TEXTFILE;
+
+-- Load Data
+LOAD DATA LOCAL INPATH '/home/hduser/txns_1gb' 
+OVERWRITE INTO TABLE default.txns;
+
+-- Check Table Size
+dfs -du -h /user/hive/warehouse/txns;
+
+-- Reducer Configuration
+SET hive.exec.reducers.bytes.per.reducer=256m;   -- Reducer size
+SET hive.exec.reducers.max=1009;                 -- Max reducers
+
+-- What Happens
+-- Total data size ≈ 1.2 GB
+-- Reducer size = 256 MB
+-- No of reducers = total map output size / hive.exec.reducers.bytes.per.reducer
+--                 = 1.2 GB / 256 MB ≈ 5
+
+-- Example Query (EXPLAIN)
+EXPLAIN 
+SELECT state, COUNT(*), SUM(amount) 
+FROM txns 
+GROUP BY state;
+```
 
 ## Bucketing Improves Join Performance: Example 🤝
 
