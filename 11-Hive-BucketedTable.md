@@ -768,7 +768,7 @@ Map Operator Tree:
 
 ---
 
-## TL;DR — Quick 6-step checklist for a dev
+## Quick 6-step checklist for a dev
 
 1. `DESCRIBE FORMATTED` + `ANALYZE TABLE` (get stats)
 2. `EXPLAIN FORMATTED` (read TS / RS / JOIN blocks)
