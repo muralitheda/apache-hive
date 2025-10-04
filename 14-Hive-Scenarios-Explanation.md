@@ -1,5 +1,5 @@
 
-## 🚀 Hive Real-time Interview Questions & Scenarios
+## 🚀 Hive Real-time Questions & Scenarios
 
 -----
 
