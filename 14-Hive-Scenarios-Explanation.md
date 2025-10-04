@@ -8,12 +8,16 @@
 
 This is due to the **Hive Fetch Task Optimization**. The property **`hive.fetch.task.conversion`** lowers the latency overhead of MapReduce/Tez/Spark by skipping the job execution for simple queries.
 
-  \* 💡 **Explanation:** Queries that only involve fetching, filtering, or limiting data (e.g., `SELECT`, `FILTER`, `LIMIT`) can bypass the distributed execution engine.
-  \* ⚙️ **Values:** `none`, `minimal`, and `more`.
-  \* **Example Query (Bypasses MapReduce):**
-    ` sql     SELECT * FROM table_name LIMIT 10;      `
-  \* **Check the Default Value:**
-    ` sql     SET hive.fetch.task.conversion;      `
+  * 💡 **Explanation:** Queries that only involve fetching, filtering, or limiting data (e.g., `SELECT`, `FILTER`, `LIMIT`) can bypass the distributed execution engine.
+  * ⚙️ **Values:** `none`, `minimal`, and `more`.
+  * **Example Query (Bypasses MapReduce):**
+    ```sql
+    SELECT * FROM table_name LIMIT 10;
+    ```
+  * **Check the Default Value:**
+    ```sql
+    SET hive.fetch.task.conversion;
+    ```
 
 #### Q2. How to change Hive configurations?
 
@@ -105,15 +109,15 @@ INNER JOIN (
 
 Use SQL analytical functions or unique ID generators:
 
-  \* **Window Function:** **`ROW_NUMBER() OVER (PARTITION BY col1 ORDER BY col2)`**
-  \* **UUID:** The **`UUID()`** function.
-  \* **Others:** Custom UDFs or `monotonically_increasing_id()` (in Spark/Hive environments).
+  * **Window Function:** **`ROW_NUMBER() OVER (PARTITION BY col1 ORDER BY col2)`**
+  * **UUID:** The **`UUID()`** function.
+  * **Others:** Custom UDFs or `monotonically_increasing_id()` (in Spark/Hive environments).
 
 #### Q7. Inner Join behavior with `NULL` keys.
 
 When performing an `INNER JOIN` on a column that contains **`NULL`** values, the `NULL` values **will not match**. SQL treats `NULL` as an "unknown" value, and two unknown values are not considered equal.
 
-  \* 🚫 **Example Result:** If `Table A` and `Table B` both have a row where the join key is `NULL`, the join result will **not** include a merged row for these records.
+  * 🚫 **Example Result:** If `Table A` and `Table B` both have a row where the join key is `NULL`, the join result will **not** include a merged row for these records.
 
 -----
 
@@ -123,45 +127,55 @@ When performing an `INNER JOIN` on a column that contains **`NULL`** values, the
 
 Use **`TBLPROPERTIES`**:
 
-  \* **Skip Header:** `TBLPROPERTIES("skip.header.line.count"="2");`
-  \* **Skip Footer:** `TBLPROPERTIES("skip.footer.line.count"="1");`
+  * **Skip Header:** `TBLPROPERTIES("skip.header.line.count"="2");`
+  * **Skip Footer:** `TBLPROPERTIES("skip.footer.line.count"="1");`
 
 #### Q9. How to read fixed-width data in Hive?
 
-1.   **Using `RegexSerDe` (Regular Expression Serializer/Deserializer)**:
-        ` sql     CREATE EXTERNAL TABLE customers (...)     ROW FORMAT SERDE 'org.apache.hadoop.hive.contrib.serde2.RegexSerDe'     WITH SERDEPROPERTIES ("input.regex" = "(.{10})(.{10})" ) -- Regex for fixed width     ...      `
-2.   **Using `SUBSTR` and `TRIM`**: Load the fixed-width file as a single string column, then parse it:
-        ` sql     SELECT         TRIM(SUBSTR(single_line_col, 1, 50)) AS name,         CAST(TRIM(SUBSTR(single_line_col, 51, 3)) AS INT) AS age     FROM temp_single_column_table;      `
+1.  **Using `RegexSerDe` (Regular Expression Serializer/Deserializer)**:
+    ```sql
+    CREATE EXTERNAL TABLE customers (...)
+    ROW FORMAT SERDE 'org.apache.hadoop.hive.contrib.serde2.RegexSerDe'
+    WITH SERDEPROPERTIES ("input.regex" = "(.{10})(.{10})" ) -- Regex for fixed width
+    ...
+    ```
+2.  **Using `SUBSTR` and `TRIM`**: Load the fixed-width file as a single string column, then parse it:
+    ```sql
+    SELECT
+        TRIM(SUBSTR(single_line_col, 1, 50)) AS name,
+        CAST(TRIM(SUBSTR(single_line_col, 51, 3)) AS INT) AS age
+    FROM temp_single_column_table;
+    ```
 
 #### Q10. How to prevent accidental data duplication on subsequent data loads?
 
-Use the **Immutable Table** property for static or fixed dimension data (e.g., calendar, geography).
+Use the **Immutable Table** property for static or fixed dimension data.
 
-  \* 🛡️ **Mechanism:** **`INSERT INTO`** is disallowed if any data is already present. The first `INSERT INTO` succeeds, but successive ones fail, preventing duplication.
-  \* 📌 **Note:** **`INSERT OVERWRITE`** is still allowed even if the table is immutable.
-  \* **Syntax:** `TBLPROPERTIES ("immutable"="true");`
+  * 🛡️ **Mechanism:** **`INSERT INTO`** is disallowed if any data is already present. The first `INSERT INTO` succeeds, but successive ones fail.
+  * 📌 **Note:** **`INSERT OVERWRITE`** is still allowed even if the table is immutable.
+  * **Syntax:** `TBLPROPERTIES ("immutable"="true");`
 
 #### Q11. How to Change table from `EXTERNAL` to `MANAGED` and vice versa?
 
 Change the **`EXTERNAL`** property in the table's metadata:
 
-  \* **External to Managed:** `ALTER TABLE customers3 SET TBLPROPERTIES('EXTERNAL'='FALSE');`
-  \* **Managed to External:** `ALTER TABLE customers3 SET TBLPROPERTIES('EXTERNAL'='TRUE');`
+  * **External to Managed:** `ALTER TABLE customers3 SET TBLPROPERTIES('EXTERNAL'='FALSE');`
+  * **Managed to External:** `ALTER TABLE customers3 SET TBLPROPERTIES('EXTERNAL'='TRUE');`
 
 #### Q12. How to load data into Hive without first copying it to HDFS?
 
 Use the **`LOAD DATA LOCAL INPATH`** command.
 
-  \* **Example:** `LOAD DATA **LOCAL** INPATH ‘/local/file/path’ INTO TABLE tbl_name;`
+  * **Example:** `LOAD DATA **LOCAL** INPATH ‘/local/file/path’ INTO TABLE tbl_name;`
 
 #### Q13. Does Hive support record-level DML (`INSERT`, `UPDATE`, `DELETE`)?
 
-  \* **Record-level `INSERT`** is supported using `INSERT INTO tablename VALUES();`.
-  \* **`UPDATE` and `DELETE`** are **not supported by default**, but can be enabled if the table is set up for **ACID transactions** (Atomicity, Consistency, Isolation, and Durability).
+  * **Record-level `INSERT`** is supported using `INSERT INTO tablename VALUES();`.
+  * **`UPDATE` and `DELETE`** are **not supported by default**, but can be enabled if the table is set up for **ACID transactions**.
 
 #### Q14. What are the constraints in Hive?
 
-Hive supports constraints (**`PRIMARY KEY`**, **`NOT NULL`**, etc.) for **representation purposes only** (metadata), not for enforcement. Enforcement is avoided to prevent performance degradation inherent in Big Data systems.
+Hive supports constraints (**`PRIMARY KEY`**, **`NOT NULL`**, etc.) for **representation purposes only** (metadata), not for **enforcement**.
 
 -----
 
@@ -200,10 +214,10 @@ ALTER TABLE newtbl RENAME TO oldtable;
 
 **Scenario:** Daily feed contains 1 week of data (with updates) to load into a target table containing 3 years of partitioned data.
 
-**Solution:** Use **`INSERT OVERWRITE`** but strategically limit the scope to the specific **partitions** being updated (the 1 week of data).
+**Solution:** Use **`INSERT OVERWRITE`** but strategically limit the scope to the specific **partitions** being updated.
 
-  \* **Target Table Type:** Partitioned table based on the data date/timestamp.
-  \* **Logic:** If the source data covers partitions `2021-12-26` to `2022-01-02`, the query must explicitly overwrite *only* those partitions. This avoids deleting data outside that date range.
+  * **Target Table Type:** Partitioned table based on the data date/timestamp.
+  * **Logic:** The query must explicitly overwrite *only* those partitions (e.g., `WHERE PARTITION_COL IN ('2021-12-26', '2022-01-02')`).
 
 -----
 
@@ -220,23 +234,28 @@ SET hive.mapred.supports.subdirectories=true;
 
 #### Q18. How to discover partitions created by external systems (e.g., Spark/Sqoop)?
 
-External tools load data into HDFS but don't update the Hive Metastore. Run a repair command to sync HDFS with the Metastore:
+External tools load data into HDFS but don't update the Hive Metastore. Run a repair command:
 
-  \* **Repair Command:** **`MSCK REPAIR TABLE <db_name>.<table_name>;`**
+  * **Repair Command:** **`MSCK REPAIR TABLE <db_name>.<table_name>;`**
 
 #### Q19. How to automatically configure partition discovery and retention?
 
-  \* 🔄 **Automatic Discovery:** Set `metastore.partition.management.task.frequency` and enable on the table:
-    ` sql     SET metastore.partition.management.task.frequency=600;     ALTER TABLE exttbl SET TBLPROPERTIES ('discover.partitions' = 'true');      `
-  \* 🗑️ **Partition Retention (Purging):** Configure a period after which data and metadata are dropped:
-    ` sql     ALTER TABLE customer SET TBLPROPERTIES ('partition.retention.period'='365d');      `
+  * 🔄 **Automatic Discovery:** Set `metastore.partition.management.task.frequency` and enable on the table:
+    ```sql
+    SET metastore.partition.management.task.frequency=600;
+    ALTER TABLE exttbl SET TBLPROPERTIES ('discover.partitions' = 'true');
+    ```
+  * 🗑️ **Partition Retention (Purging):** Configure a period after which data and metadata are dropped:
+    ```sql
+    ALTER TABLE customer SET TBLPROPERTIES ('partition.retention.period'='365d');
+    ```
 
 #### Q20. Maximum Dynamic Partition Limits
 
 Limits prevent resource exhaustion from creating too many partitions in one operation:
 
-  \* **Per Node Limit:** Default is **100**. **Configuration:** `SET hive.exec.max.dynamic.partitions.pernode = <value>`
-  \* **Total Limit:** Default is **1000**. **Configuration:** `SET hive.exec.max.dynamic.partitions = <value>`
+  * **Per Node Limit:** Default is **100**. **Configuration:** `SET hive.exec.max.dynamic.partitions.pernode = <value>`
+  * **Total Limit:** Default is **1000**. **Configuration:** `SET hive.exec.max.dynamic.partitions = <value>`
 
 #### Q21. Dropping Tables Permanently (Bypassing Trash)
 
@@ -250,8 +269,8 @@ This skips the HDFS trash directory.
 
 #### Q22. Effect of Renaming a Hive Table
 
-  \* **Managed Table:** HDFS location **is** automatically changed.
-  \* **External Table:** HDFS location is **not** changed.
+  * **Managed Table:** HDFS location **is** automatically changed.
+  * **External Table:** HDFS location is **not** changed.
 
 #### Q23. Effect of Changing Partition Location (`ALTER TABLE ... SET LOCATION`)
 
@@ -295,7 +314,11 @@ Small files cause NameNode overload and inefficient MapReduce.
 1.  **Clean Zero-Byte Files:** Remove `_SUCCESS` and `_FAILURE` files.
 2.  **Archiving (HAR):** Logically group files. **Benefit:** It **reduces the number of files stored**.
 3.  **Merge Files (On Overwrite):** Use `INSERT OVERWRITE` with merge properties:
-        ` sql     SET hive.merge.mapfiles=true;     SET hive.merge.smallfiles.avgsize=104857600; -- e.g., 100 MB     INSERT OVERWRITE TABLE table1 SELECT * FROM table1;      `
+    ```sql
+    SET hive.merge.mapfiles=true;
+    SET hive.merge.smallfiles.avgsize=104857600; -- e.g., 100 MB
+    INSERT OVERWRITE TABLE table1 SELECT * FROM table1;
+    ```
 4.  **Compaction (For ACID Tables):** Enable and schedule **Major** and **Minor** compactions for transactional tables.
 
 -----
@@ -303,8 +326,6 @@ Small files cause NameNode overload and inefficient MapReduce.
 ### 🏗️ VII. Data Architecture and Lifecycle
 
 #### Q28. End-to-end Data Management & Storage Layers
-
-Data typically flows through three main layers:
 
 | Layer | Purpose | Key Technology |
 | :--- | :--- | :--- |
@@ -317,7 +338,6 @@ Data typically flows through three main layers:
 Use **`hivevar`** or **`hiveconf`** flags when executing the script:
 
 ```bash
-# Pass variables 'db_name' and 'load_dt'
 hive -hivevar db_name='prodretaildb' -hivevar load_dt='2021-12-26' -f /home/hduser/xyz.hql
 
 # Inside the HQL file:
@@ -330,10 +350,8 @@ WHERE loaddt=${hivevar:load_dt};
 | Feature | View | Materialized View (MV) |
 | :--- | :--- | :--- |
 | **Data Storage** | No (Logical Query/Stored Statement). | Yes (Pre-computed, Cached Data). |
-| **Updates** | Changes when base table data is queried (Real-time). | Must be explicitly refreshed/recomputed. |
-| **Primary Use** | Security (data hiding/masking), simplifying complex queries. | Performance for BI/dashboard queries by using cached joins/aggregations. |
-
-  \* **Schema Evolution on View:** If the base table adds a new column, the view will only see it if the view was created using `SELECT *`. If created with an explicit column list, the new column won't be displayed.
+| **Primary Use** | Security (data hiding/masking), Query Simplification. | Performance for BI/dashboard queries. |
+| **Schema Evolution** | Only sees new columns if created with `SELECT *`. | N/A |
 
 -----
 
@@ -343,8 +361,8 @@ WHERE loaddt=${hivevar:load_dt};
 | :--- | :--- |
 | **Max size of `STRING` datatype?** | **2 GB**. |
 | **Pivot Array column to rows?** | Use the **`EXPLODE`** function. |
-| **Connect to Hive?** | **Beeline CLI** (replaces Hive CLI), Hue (UI), SQL tools (via JDBC/ODBC), Spark.sql(). |
+| **Connect to Hive?** | **Beeline CLI** (replaces Hive CLI), JDBC/ODBC, Spark.sql(). |
 | **Multi-line comment supported?** | **No**. |
-| **Partition data present, but no metadata?** | **D. No result are returned**. The data is invisible to the query engine. |
+| **Partition data present, but no metadata?** | **D. No result are returned**. |
 | **Archiving a Partition Benefit?** | **D. reduces the number of files stored**. |
-| **Hive most suitable for?** | Data warehouse applications where: 1) The data is relatively **static/incremental**, and 2) **Fast response time is not required**. |
+| **Hive most suitable for?** | Data warehouse applications with **static/incremental data** where **fast response time is not required**. |
