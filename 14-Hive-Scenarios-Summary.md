@@ -1,4 +1,4 @@
-# Hive Questions & Answers (1-120)
+# Hive Scenarios & Answers (1-120)
 
 ## 1-20: Basics of Hive
 

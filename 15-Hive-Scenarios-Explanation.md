@@ -1,5 +1,5 @@
 
-# Hive Realtime Interview Questions 2023
+# Hive Realtime Scenario Questions
 
 
 ## 1. Difference between Internal and External tables in Hive
