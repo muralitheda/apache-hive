@@ -1,4 +1,4 @@
-## 🚀 Hive Real-time Scenario Questions & Solutions
+## 🚀 Hive Real-time Scenario Questions & Scenarios
 
 -----
 
@@ -31,7 +31,7 @@ Configurations can be changed at multiple levels:
 
 #### Q3. Can I use a multi-column subquery in the `WHERE` clause in Hive?
 
-Hive typically does not support multi-column subqueries using the `IN` clause.
+Hive typically does not support multi-column subqueries using the `IN` clause (e.g., `WHERE (col1, col2) IN (SELECT col1, col2...)`).
 
 **❌ Non-Working Example:**
 
@@ -64,7 +64,7 @@ INNER JOIN tableB B
 
 #### Q4. Does Hive support `MINUS`/`EXCEPT`? How do I achieve the equivalent?
 
-No, Hive does not support **`MINUS`**/`EXCEPT`.
+No, Hive does not support **`MINUS`** or **`EXCEPT`**.
 
 **✅ Solution: Using a `LEFT JOIN` and filtering for `NULL`**
 
@@ -111,7 +111,7 @@ Use SQL analytical functions or unique ID generators:
 
 #### Q7. Inner Join behavior with `NULL` keys.
 
-When performing an `INNER JOIN` on a column that contains **`NULL`** values, the `NULL` values **will not match**. SQL treats `NULL` as an "unknown" value.
+When performing an `INNER JOIN` on a column that contains **`NULL`** values, the `NULL` values **will not match**. SQL treats `NULL` as an "unknown" value, and two unknown values are not considered equal.
 
   \* 🚫 **Example Result:** If `Table A` and `Table B` both have a row where the join key is `NULL`, the join result will **not** include a merged row for these records.
 
@@ -135,10 +135,10 @@ Use **`TBLPROPERTIES`**:
 
 #### Q10. How to prevent accidental data duplication on subsequent data loads?
 
-Use the **Immutable Table** property for static or fixed dimension data.
+Use the **Immutable Table** property for static or fixed dimension data (e.g., calendar, geography).
 
-  \* 🛡️ **Mechanism:** **`INSERT INTO`** is disallowed if any data is already present. The first `INSERT INTO` succeeds, but successive ones fail.
-  \* 📌 **Note:** **`INSERT OVERWRITE`** is still allowed.
+  \* 🛡️ **Mechanism:** **`INSERT INTO`** is disallowed if any data is already present. The first `INSERT INTO` succeeds, but successive ones fail, preventing duplication.
+  \* 📌 **Note:** **`INSERT OVERWRITE`** is still allowed even if the table is immutable.
   \* **Syntax:** `TBLPROPERTIES ("immutable"="true");`
 
 #### Q11. How to Change table from `EXTERNAL` to `MANAGED` and vice versa?
@@ -161,7 +161,7 @@ Use the **`LOAD DATA LOCAL INPATH`** command.
 
 #### Q14. What are the constraints in Hive?
 
-Hive supports constraints (**`PRIMARY KEY`**, **`NOT NULL`**) for **representation purposes only**, not for enforcement.
+Hive supports constraints (**`PRIMARY KEY`**, **`NOT NULL`**, etc.) for **representation purposes only** (metadata), not for enforcement. Enforcement is avoided to prevent performance degradation inherent in Big Data systems.
 
 -----
 
@@ -198,11 +198,12 @@ ALTER TABLE newtbl RENAME TO oldtable;
 
 #### Q16. Reinstated Data Load Scenario (Handling SCD/Updates)
 
-**Scenario:** Daily feed contains 1 week of data (with updates) to load into a partitioned table containing 3 years of data.
+**Scenario:** Daily feed contains 1 week of data (with updates) to load into a target table containing 3 years of partitioned data.
 
-**Solution:** Use **`INSERT OVERWRITE`** but explicitly limit the scope to only the affected **partitions** (the 1 week of data) to avoid deleting history.
+**Solution:** Use **`INSERT OVERWRITE`** but strategically limit the scope to the specific **partitions** being updated (the 1 week of data).
 
-  \* **Logic:** The `INSERT OVERWRITE` query must only run against the specific partitions being refreshed.
+  \* **Target Table Type:** Partitioned table based on the data date/timestamp.
+  \* **Logic:** If the source data covers partitions `2021-12-26` to `2022-01-02`, the query must explicitly overwrite *only* those partitions. This avoids deleting data outside that date range.
 
 -----
 
@@ -219,7 +220,7 @@ SET hive.mapred.supports.subdirectories=true;
 
 #### Q18. How to discover partitions created by external systems (e.g., Spark/Sqoop)?
 
-External tools bypass the Metastore. Run a repair command to sync HDFS with the Metastore:
+External tools load data into HDFS but don't update the Hive Metastore. Run a repair command to sync HDFS with the Metastore:
 
   \* **Repair Command:** **`MSCK REPAIR TABLE <db_name>.<table_name>;`**
 
@@ -260,20 +261,20 @@ The **data is not automatically moved**. The data must be moved manually in HDFS
 
 ### ⚡ VI. Performance and Optimization
 
-#### Q24. How to resolve `OutOfMemoryError: Java heap space`?
+#### Q24. How to resolve `OutOfMemoryError: Java heap space` when running a UDF on large data?
 
 Increase the memory allocated to the tasks:
 
 ```sql
 SET mapreduce.map.memory.mb=4096m;
-SET mapreduce.map.java.opts=-Xmx3686m; -- JVM heap size (90% of memory.mb)
+SET mapreduce.map.java.opts=-Xmx3686m; -- JVM heap size (e.g., 90% of memory.mb)
 SET mapreduce.reduce.memory.mb=4096m;
 SET mapreduce.reduce.java.opts=-Xmx3686m;
 ```
 
-#### Q25. How to fix a "vertex error"?
+#### Q25. How to fix a "vertex error" during a Hive query?
 
-Switch the execution engine to MapReduce if running Tez/Spark:
+A common fix is to switch the execution engine from Tez/Spark to MapReduce:
 
 ```sql
 SET hive.execution.engine=mr;
@@ -285,16 +286,17 @@ Data skew bottlenecks a single reducer. Hive's optimization splits the large key
 
 1.  **Detect Skew:** `SET hive.skewjoin.exist = true;`
 2.  **Enable Optimization:** `SET hive.optimize.skewjoin = true;`
+3.  **Mechanism:** Skewed keys are split by adding a random suffix, allowing multiple smaller tasks to run in parallel.
 
-#### Q27. Steps to Handle the "Small Files Issue"
+#### Q27. Steps to Handle the "Small Files Issue" in Hive
 
 Small files cause NameNode overload and inefficient MapReduce.
 
 1.  **Clean Zero-Byte Files:** Remove `_SUCCESS` and `_FAILURE` files.
-2.  **Archiving (HAR):** Logically group files. Benefit: **reduces the number of files stored**.
-3.  **Merge Files:** Use `INSERT OVERWRITE` with merge properties:
-        ` sql     SET hive.merge.mapfiles=true;     SET hive.merge.smallfiles.avgsize=104857600; -- Target size     INSERT OVERWRITE TABLE table1 SELECT * FROM table1;      `
-4.  **Compaction (ACID):** Run Major/Minor compactions for transactional tables.
+2.  **Archiving (HAR):** Logically group files. **Benefit:** It **reduces the number of files stored**.
+3.  **Merge Files (On Overwrite):** Use `INSERT OVERWRITE` with merge properties:
+        ` sql     SET hive.merge.mapfiles=true;     SET hive.merge.smallfiles.avgsize=104857600; -- e.g., 100 MB     INSERT OVERWRITE TABLE table1 SELECT * FROM table1;      `
+4.  **Compaction (For ACID Tables):** Enable and schedule **Major** and **Minor** compactions for transactional tables.
 
 -----
 
@@ -302,21 +304,23 @@ Small files cause NameNode overload and inefficient MapReduce.
 
 #### Q28. End-to-end Data Management & Storage Layers
 
+Data typically flows through three main layers:
+
 | Layer | Purpose | Key Technology |
 | :--- | :--- | :--- |
-| **Raw/Transient** | Initial Ingestion | HDFS/S3/Kafka |
-| **Curated Layer** | ETL, Batch Aggregation | **Hive** (using ORC/Snappy), Presto |
-| **Discovery/Presentation** | Low-latency Lookups | **NoSQL** (HBase, Cassandra, ES) |
+| **Raw/Transient** | Initial Ingestion | HDFS/S3/GCS/Kafka |
+| **Curated Layer** | ETL/ELT, Batch Aggregation | **Hive** (using ORC/Snappy), Presto, Impala, BigQuery |
+| **Discovery/Presentation** | Real-time (RT) Aggregation | **NoSQL** (Cassandra, HBase, ES) for low-latency random read/write |
 
 #### Q29. How to write parameterized Hive queries without logging into the prompt?
 
-Use **`hivevar`** or **`hiveconf`** flags:
+Use **`hivevar`** or **`hiveconf`** flags when executing the script:
 
 ```bash
 # Pass variables 'db_name' and 'load_dt'
 hive -hivevar db_name='prodretaildb' -hivevar load_dt='2021-12-26' -f /home/hduser/xyz.hql
 
-# Inside HQL:
+# Inside the HQL file:
 SELECT * FROM ${hivevar:db_name}.tablename
 WHERE loaddt=${hivevar:load_dt};
 ```
@@ -325,9 +329,11 @@ WHERE loaddt=${hivevar:load_dt};
 
 | Feature | View | Materialized View (MV) |
 | :--- | :--- | :--- |
-| **Data Storage** | No (Logical Query). | Yes (Pre-computed Cache). |
-| **Primary Use** | Security, Query Simplification. | Performance (for BI/dashboards). |
-| **Schema Evolution** | Only sees new columns if created with `SELECT *`. | N/A |
+| **Data Storage** | No (Logical Query/Stored Statement). | Yes (Pre-computed, Cached Data). |
+| **Updates** | Changes when base table data is queried (Real-time). | Must be explicitly refreshed/recomputed. |
+| **Primary Use** | Security (data hiding/masking), simplifying complex queries. | Performance for BI/dashboard queries by using cached joins/aggregations. |
+
+  \* **Schema Evolution on View:** If the base table adds a new column, the view will only see it if the view was created using `SELECT *`. If created with an explicit column list, the new column won't be displayed.
 
 -----
 
@@ -337,12 +343,8 @@ WHERE loaddt=${hivevar:load_dt};
 | :--- | :--- |
 | **Max size of `STRING` datatype?** | **2 GB**. |
 | **Pivot Array column to rows?** | Use the **`EXPLODE`** function. |
-| **Connect to Hive?** | **Beeline CLI** (replaces Hive CLI), JDBC/ODBC, Spark.sql(). |
+| **Connect to Hive?** | **Beeline CLI** (replaces Hive CLI), Hue (UI), SQL tools (via JDBC/ODBC), Spark.sql(). |
 | **Multi-line comment supported?** | **No**. |
-| **Partition data present, but no metadata?** | **D. No result are returned**. Hive relies on the Metastore entry; without it, the data is invisible. |
+| **Partition data present, but no metadata?** | **D. No result are returned**. The data is invisible to the query engine. |
 | **Archiving a Partition Benefit?** | **D. reduces the number of files stored**. |
-| **Hive most suitable for?** | Data warehouse applications with **static/incremental data** where **fast response time is not required**. |
-| **Schema Evolution on View (Specific)** | If a view is created with an explicit column list, a new column added to the base table **won't be displayed** in the view. |
-| **Workload Management** | Allows creating resource pools to improve parallel query execution, especially with **Hive LLAP**. |
-| **Cost-Based Optimizer Enhancements** | Hive can push down filtering, sorting, and joining operations to the underlying database (e.g., MySQL tables joins pushed to MySQL). |
-| **Deprecated/Unavailable Interfaces** | WebHCat, Hcat CLI, Hive CLI (replaced by **Beeline**), SQL Standard Authorization (replaced by **Ranger**), MapReduce (replaced by **Tez**). |
+| **Hive most suitable for?** | Data warehouse applications where: 1) The data is relatively **static/incremental**, and 2) **Fast response time is not required**. |
