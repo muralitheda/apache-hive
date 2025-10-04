@@ -1,152 +1,348 @@
-
-## 🚀 Hive Real-time Questions & Scenarios
-
------
-
-### I. Core Hive Query Execution and Configuration
-
-| Question | Explanation & Properties |
-| :--- | :--- |
-| **Why does a simple `SELECT *` query not run a MapReduce/Tez/Spark job in Hive?** | This is due to the **Hive Fetch Task Optimization**. The `hive.fetch.task.conversion` property allows Hive to skip the distributed execution engine for simple queries like `SELECT`, `FILTER`, or `LIMIT`, significantly reducing latency. |
-| **How to see the default value set for a config?** | Use the `SET` command: `SET hive.fetch.task.conversion;` |
-| **How to change configs (session/job level)?** | Use `SET <property>=<value>;` in the query session. For job/cluster level changes, modify `hive-site.xml` or use cluster management tools. |
+## 🚀 Hive Real-time Scenario Questions & Solutions
 
 -----
 
-### II. Advanced HiveQL and Logic
+### ⚙️ I. Core Hive Query Execution and Configuration
 
-#### Q1. Multi-Column Subquery in `WHERE` Clause
+#### Q1. Why does a simple `SELECT *` query not run a MapReduce/Tez/Spark job in Hive?
 
-Older Hive versions or certain syntaxes do not support multi-column subqueries using `IN`.
+This is due to the **Hive Fetch Task Optimization**. The property **`hive.fetch.task.conversion`** lowers the latency overhead of MapReduce/Tez/Spark by skipping the job execution for simple queries.
 
-  * **❌ Doesn't Work:** `WHERE (A.id, A.name) IN (SELECT Id, name FROM table B)`
-  * **✅ Solution 1: Use `CONCAT`**
-    ```sql
-    SELECT * FROM tableA WHERE CONCAT(A.id, A.name) IN (SELECT CONCAT(Id, name) FROM tableB);
-    ```
-  * **✅ Solution 2: Use an `INNER JOIN` (Recommended)**
-    ```sql
-    SELECT A.* FROM tableA A INNER JOIN tableB B ON A.id = B.id AND A.name = B.name;
-    ```
+  \* 💡 **Explanation:** Queries that only involve fetching, filtering, or limiting data (e.g., `SELECT`, `FILTER`, `LIMIT`) can bypass the distributed execution engine.
+  \* ⚙️ **Values:** `none`, `minimal`, and `more`.
+  \* **Example Query (Bypasses MapReduce):**
+    ` sql     SELECT * FROM table_name LIMIT 10;      `
+  \* **Check the Default Value:**
+    ` sql     SET hive.fetch.task.conversion;      `
 
-#### Q2. `MINUS`/`EXCEPT` Equivalent
+#### Q2. How to change Hive configurations?
 
-Hive does not support `MINUS` or `EXCEPT`.
+Configurations can be changed at multiple levels:
 
-  * **✅ Solution: Use `LEFT JOIN` and check for `NULL`**
-    ```sql
-    -- Find all records in A that do NOT exist in B
-    SELECT A.*
-    FROM tableA A
-    LEFT JOIN tableB B
-      ON (A.x = B.x AND A.y = B.y)
-    WHERE B.x IS NULL;
-    ```
-
-#### Q3. Subqueries in `SELECT` Clause
-
-Hive traditionally does not support correlated subqueries in the `SELECT` list.
-
-  * **✅ Solution: Use an `INNER JOIN` (Cross Join) on the aggregate subquery**
-    ```sql
-    SELECT C.customer_num, M.max_ship_chg
-    FROM customer C
-    INNER JOIN (SELECT MAX(ship_charge) AS max_ship_chg FROM orders) M ON 1=1;
-    ```
-
-#### Q4. Inner Join behavior with `NULL` keys
-
-When performing an `INNER JOIN` on a column with `NULL` values, the `NULL` values **will not match**. SQL treats `NULL` as an unknown value, and thus `NULL = NULL` is false.
-
-#### Q5. Generating a Surrogate Key / Sequence Number
-
-  * **Window Function:** `ROW_NUMBER() OVER (PARTITION BY col1 ORDER BY col2)`
-  * **Unique ID:** `UUID()` function.
+| Level | Method | Example |
+| :--- | :--- | :--- |
+| **Current Session/Query** | Use the **`SET`** command. | `SET hive.exec.engine=mr;` |
+| **Cluster/Job Level (User)** | Change in **`hive-site.xml`** and submit via Oozie or similar job scheduler. | N/A |
+| **Cluster Level (Admin)** | Change in cluster management tools (Ambari, Cloudera Manager, EMR, Dataproc). | N/A |
 
 -----
 
-### III. Data Ingestion and Table Properties
+### 🧠 II. Advanced HiveQL and Logic
 
-| Question | Explanation & Properties |
-| :--- | :--- |
-| **How to skip header/footer rows?** | Use `TBLPROPERTIES`: `TBLPROPERTIES("skip.header.line.count"="2");` or `TBLPROPERTIES("skip.footer.line.count"="1");` |
-| **How to read fixed-width data?** | 1. Use **`RegexSerDe`** with a regular expression pattern. 2. Load data as a single `STRING` column and use **`SUBSTR`** and **`TRIM`** to parse fields. |
-| **Prevent accidental duplication on load?** | Use the **Immutable Table** property. `TBLPROPERTIES ("immutable"="true");`. This blocks successive `INSERT INTO` operations (but not `INSERT OVERWRITE`). |
-| **Change `EXTERNAL` to `MANAGED`?** | `ALTER TABLE customers SET TBLPROPERTIES('EXTERNAL'='FALSE');` (and vice-versa). |
-| **Load data without copying to HDFS first?**| Use **`LOAD DATA LOCAL INPATH`**. Example: `LOAD DATA LOCAL INPATH '/local/file/path' INTO TABLE tbl_name;` |
-| **Is record-level DML (`UPDATE`/`DELETE`) supported?** | **No, not by default**. It is only supported if the table is enabled for **ACID transactions** (Atomicity, Consistency, Isolation, and Durability) and typically stored in **ORC** format with bucketing. |
-| **What are the constraints in Hive?** | Constraints (`PRIMARY KEY`, `NOT NULL`) are supported for **representation purposes only** (metadata), not for enforcement, to maintain performance. |
+#### Q3. Can I use a multi-column subquery in the `WHERE` clause in Hive?
+
+Hive typically does not support multi-column subqueries using the `IN` clause.
+
+**❌ Non-Working Example:**
+
+```sql
+SELECT * FROM tableA
+WHERE (A.id, A.name, A.Roll_no) IN (
+    SELECT Id, name, roll_no FROM tableB
+);
+```
+
+**✅ Solution 1: Using `CONCAT` (Concatenation)**
+
+```sql
+SELECT * FROM tableA
+WHERE CONCAT(A.id, A.name, A.Roll_no) IN (
+    SELECT CONCAT(Id, name, roll_no) FROM tableB
+);
+```
+
+**✅ Solution 2: Using an `INNER JOIN` (Preferred Method)**
+
+```sql
+SELECT A.*
+FROM tableA A
+INNER JOIN tableB B
+  ON A.id = B.id
+  AND A.name = B.name
+  AND A.Roll_no = B.Roll_no;
+```
+
+#### Q4. Does Hive support `MINUS`/`EXCEPT`? How do I achieve the equivalent?
+
+No, Hive does not support **`MINUS`**/`EXCEPT`.
+
+**✅ Solution: Using a `LEFT JOIN` and filtering for `NULL`**
+
+```sql
+-- Find all records in table A that do NOT exist in table B
+SELECT A.*
+FROM tableA A
+LEFT JOIN tableB B
+  ON (A.x = B.x AND A.y = B.y AND A.z = B.z) -- Match on all columns
+WHERE B.x IS NULL; -- The record only exists in A
+```
+
+#### Q5. Does Hive support subqueries in the `SELECT` clause?
+
+No, Hive traditionally does not support subqueries in the `SELECT` list.
+
+**❌ Non-Working Example:**
+
+```sql
+SELECT customer_num, (SELECT MAX(ship_charge) FROM orders) AS max_ship_chg
+FROM customer;
+```
+
+**✅ Solution: Using an `INNER JOIN` (Cross Join)**
+
+```sql
+SELECT
+    C.customer_num,
+    M.ship_chg
+FROM customer C
+INNER JOIN (
+    SELECT MAX(ship_charge) AS ship_chg
+    FROM orders
+) M ON 1=1;
+```
+
+#### Q6. How to generate a Surrogate Key / Sequence Number in Hive?
+
+Use SQL analytical functions or unique ID generators:
+
+  \* **Window Function:** **`ROW_NUMBER() OVER (PARTITION BY col1 ORDER BY col2)`**
+  \* **UUID:** The **`UUID()`** function.
+  \* **Others:** Custom UDFs or `monotonically_increasing_id()` (in Spark/Hive environments).
+
+#### Q7. Inner Join behavior with `NULL` keys.
+
+When performing an `INNER JOIN` on a column that contains **`NULL`** values, the `NULL` values **will not match**. SQL treats `NULL` as an "unknown" value.
+
+  \* 🚫 **Example Result:** If `Table A` and `Table B` both have a row where the join key is `NULL`, the join result will **not** include a merged row for these records.
 
 -----
 
-### IV. Performance and Optimization
+### 💾 III. Data Ingestion and Table Properties
 
-#### Q6. Handling Data Skew (The Missing Point)
+#### Q8. How to skip header/footer rows in a Hive table?
 
-Data skew is when one key has significantly more data than others, causing one reducer to become a bottleneck. Hive can mitigate this using a **Skew Join Optimization**.
+Use **`TBLPROPERTIES`**:
 
-  * **Enable Skew Detection:** `SET hive.skewjoin.exist = true;`
-  * **Enable Skew Join Optimization:** `SET hive.optimize.skewjoin = true;`
-  * **Mechanism:** When a highly skewed key is detected, Hive splits the processing for that large key into multiple smaller tasks (by adding a random suffix to the skewed key), allowing the join to be completed by multiple reducers in parallel.
+  \* **Skip Header:** `TBLPROPERTIES("skip.header.line.count"="2");`
+  \* **Skip Footer:** `TBLPROPERTIES("skip.footer.line.count"="1");`
 
-#### Q7. Resolving `OutOfMemoryError: Java heap space`
+#### Q9. How to read fixed-width data in Hive?
+
+1.   **Using `RegexSerDe` (Regular Expression Serializer/Deserializer)**:
+        ` sql     CREATE EXTERNAL TABLE customers (...)     ROW FORMAT SERDE 'org.apache.hadoop.hive.contrib.serde2.RegexSerDe'     WITH SERDEPROPERTIES ("input.regex" = "(.{10})(.{10})" ) -- Regex for fixed width     ...      `
+2.   **Using `SUBSTR` and `TRIM`**: Load the fixed-width file as a single string column, then parse it:
+        ` sql     SELECT         TRIM(SUBSTR(single_line_col, 1, 50)) AS name,         CAST(TRIM(SUBSTR(single_line_col, 51, 3)) AS INT) AS age     FROM temp_single_column_table;      `
+
+#### Q10. How to prevent accidental data duplication on subsequent data loads?
+
+Use the **Immutable Table** property for static or fixed dimension data.
+
+  \* 🛡️ **Mechanism:** **`INSERT INTO`** is disallowed if any data is already present. The first `INSERT INTO` succeeds, but successive ones fail.
+  \* 📌 **Note:** **`INSERT OVERWRITE`** is still allowed.
+  \* **Syntax:** `TBLPROPERTIES ("immutable"="true");`
+
+#### Q11. How to Change table from `EXTERNAL` to `MANAGED` and vice versa?
+
+Change the **`EXTERNAL`** property in the table's metadata:
+
+  \* **External to Managed:** `ALTER TABLE customers3 SET TBLPROPERTIES('EXTERNAL'='FALSE');`
+  \* **Managed to External:** `ALTER TABLE customers3 SET TBLPROPERTIES('EXTERNAL'='TRUE');`
+
+#### Q12. How to load data into Hive without first copying it to HDFS?
+
+Use the **`LOAD DATA LOCAL INPATH`** command.
+
+  \* **Example:** `LOAD DATA **LOCAL** INPATH ‘/local/file/path’ INTO TABLE tbl_name;`
+
+#### Q13. Does Hive support record-level DML (`INSERT`, `UPDATE`, `DELETE`)?
+
+  \* **Record-level `INSERT`** is supported using `INSERT INTO tablename VALUES();`.
+  \* **`UPDATE` and `DELETE`** are **not supported by default**, but can be enabled if the table is set up for **ACID transactions** (Atomicity, Consistency, Isolation, and Durability).
+
+#### Q14. What are the constraints in Hive?
+
+Hive supports constraints (**`PRIMARY KEY`**, **`NOT NULL`**) for **representation purposes only**, not for enforcement.
+
+-----
+
+### ✨ IV. Data Quality and Deduplication
+
+#### Q15. How to remove duplicate data from a Hive table?
+
+**Option 1: Low Volume (`DISTINCT` / `GROUP BY`)**
+Use **`INSERT OVERWRITE`** with **`SELECT DISTINCT`**.
+
+```sql
+INSERT OVERWRITE TABLE oldtable
+SELECT DISTINCT id, name, phone, ts FROM oldtable;
+```
+
+**Option 2: High Volume (Window Function - Recommended)**
+Use the **`ROW_NUMBER()`** analytical function to keep only the latest/first record (`rnk = 1`):
+
+```sql
+CREATE TABLE newtbl AS
+SELECT id, name, phone, ts
+FROM (
+    SELECT
+        id, name, phone, ts,
+        ROW_NUMBER() OVER(PARTITION BY id, name, phone ORDER BY ts DESC) AS rnk
+    FROM oldtable
+) ranked_data
+WHERE rnk = 1;
+
+-- Then, drop the original table and rename the new one.
+DROP TABLE oldtable;
+ALTER TABLE newtbl RENAME TO oldtable;
+```
+
+#### Q16. Reinstated Data Load Scenario (Handling SCD/Updates)
+
+**Scenario:** Daily feed contains 1 week of data (with updates) to load into a partitioned table containing 3 years of data.
+
+**Solution:** Use **`INSERT OVERWRITE`** but explicitly limit the scope to only the affected **partitions** (the 1 week of data) to avoid deleting history.
+
+  \* **Logic:** The `INSERT OVERWRITE` query must only run against the specific partitions being refreshed.
+
+-----
+
+### 🧱 V. Partitioning and Data Management
+
+#### Q17. How to manage data files in multiple HDFS subdirectories under a single Hive table?
+
+Enable recursive directory listing and subdirectory support:
+
+```sql
+SET mapred.input.dir.recursive=true;
+SET hive.mapred.supports.subdirectories=true;
+```
+
+#### Q18. How to discover partitions created by external systems (e.g., Spark/Sqoop)?
+
+External tools bypass the Metastore. Run a repair command to sync HDFS with the Metastore:
+
+  \* **Repair Command:** **`MSCK REPAIR TABLE <db_name>.<table_name>;`**
+
+#### Q19. How to automatically configure partition discovery and retention?
+
+  \* 🔄 **Automatic Discovery:** Set `metastore.partition.management.task.frequency` and enable on the table:
+    ` sql     SET metastore.partition.management.task.frequency=600;     ALTER TABLE exttbl SET TBLPROPERTIES ('discover.partitions' = 'true');      `
+  \* 🗑️ **Partition Retention (Purging):** Configure a period after which data and metadata are dropped:
+    ` sql     ALTER TABLE customer SET TBLPROPERTIES ('partition.retention.period'='365d');      `
+
+#### Q20. Maximum Dynamic Partition Limits
+
+Limits prevent resource exhaustion from creating too many partitions in one operation:
+
+  \* **Per Node Limit:** Default is **100**. **Configuration:** `SET hive.exec.max.dynamic.partitions.pernode = <value>`
+  \* **Total Limit:** Default is **1000**. **Configuration:** `SET hive.exec.max.dynamic.partitions = <value>`
+
+#### Q21. Dropping Tables Permanently (Bypassing Trash)
+
+Use the **`PURGE`** option with the `DROP TABLE` statement:
+
+```sql
+DROP TABLE [IF EXISTS] table_name PURGE;
+```
+
+This skips the HDFS trash directory.
+
+#### Q22. Effect of Renaming a Hive Table
+
+  \* **Managed Table:** HDFS location **is** automatically changed.
+  \* **External Table:** HDFS location is **not** changed.
+
+#### Q23. Effect of Changing Partition Location (`ALTER TABLE ... SET LOCATION`)
+
+The **data is not automatically moved**. The data must be moved manually in HDFS.
+
+-----
+
+### ⚡ VI. Performance and Optimization
+
+#### Q24. How to resolve `OutOfMemoryError: Java heap space`?
 
 Increase the memory allocated to the tasks:
 
 ```sql
-SET mapreduce.map.memory.mb=4096m;      
-SET mapreduce.map.java.opts=-Xmx3686m;  -- Must be slightly less than memory.mb
-SET mapreduce.reduce.memory.mb=4096m;   
+SET mapreduce.map.memory.mb=4096m;
+SET mapreduce.map.java.opts=-Xmx3686m; -- JVM heap size (90% of memory.mb)
+SET mapreduce.reduce.memory.mb=4096m;
 SET mapreduce.reduce.java.opts=-Xmx3686m;
 ```
 
-#### Q8. Fixing "Small Files Issue" (The Missing Point)
+#### Q25. How to fix a "vertex error"?
 
-Small files create excessive overhead for the NameNode and inefficient MapReduce jobs.
-
-1.  **Merging:** Use `INSERT OVERWRITE` with merge properties to force a shuffle that combines files:
-    ```sql
-    SET hive.merge.mapfiles=true;
-    SET hive.merge.mapredfiles=true;
-    SET hive.merge.smallfiles.avgsize=104857600; -- Target average size (e.g., 100MB)
-    INSERT OVERWRITE TABLE table1 SELECT * FROM table1;
-    ```
-2.  **Archiving (HAR):** Use Hadoop Archives to logically group small files.
-      * **Benefit:** It **reduces the number of files stored** (Option D).
-3.  **Compaction:** For ACID tables, enable Major/Minor compactions to combine small delta files.
-
-#### Q9. Fixing a "Vertex Error"
-
-If a query fails with a Tez/Spark vertex error, a common fix is to revert to the more stable MapReduce engine for that session:
+Switch the execution engine to MapReduce if running Tez/Spark:
 
 ```sql
 SET hive.execution.engine=mr;
 ```
 
+#### Q26. Data Skew Handling (Using `hive.skewjoin.key` properties)
+
+Data skew bottlenecks a single reducer. Hive's optimization splits the large key's work across multiple reducers.
+
+1.  **Detect Skew:** `SET hive.skewjoin.exist = true;`
+2.  **Enable Optimization:** `SET hive.optimize.skewjoin = true;`
+
+#### Q27. Steps to Handle the "Small Files Issue"
+
+Small files cause NameNode overload and inefficient MapReduce.
+
+1.  **Clean Zero-Byte Files:** Remove `_SUCCESS` and `_FAILURE` files.
+2.  **Archiving (HAR):** Logically group files. Benefit: **reduces the number of files stored**.
+3.  **Merge Files:** Use `INSERT OVERWRITE` with merge properties:
+        ` sql     SET hive.merge.mapfiles=true;     SET hive.merge.smallfiles.avgsize=104857600; -- Target size     INSERT OVERWRITE TABLE table1 SELECT * FROM table1;      `
+4.  **Compaction (ACID):** Run Major/Minor compactions for transactional tables.
+
 -----
 
-### V. Partitioning and Data Management
+### 🏗️ VII. Data Architecture and Lifecycle
 
-| Question | Explanation & Properties |
-| :--- | :--- |
-| **Manage data in multiple HDFS subdirectories?** | Enable recursive directory listing: `SET mapred.input.dir.recursive=true;` and `SET hive.mapred.supports.subdirectories=true;` |
-| **Discover partitions created externally?** | Update the Metastore with the HDFS structure: **`MSCK REPAIR TABLE <table_name>;`** |
-| **Dynamic Partition Limits (The Missing Point)** | To prevent too many partitions, Hive has limits: **Per Node:** `SET hive.exec.max.dynamic.partitions.pernode = 100` (Default). **Total:** `SET hive.exec.max.dynamic.partitions = 1000` (Default). |
-| **Automatic Partition Retention/Purging?** | `ALTER TABLE customer SET TBLPROPERTIES ('partition.retention.period'='365d');` |
-| **Permanently drop table and data (skip trash)?** | `DROP TABLE [IF EXISTS] table_name PURGE;` |
-| **Effect of Renaming an External Table?** | **No**, the underlying HDFS location is **not** changed. |
-| **Effect of Changing Partition Location?** | **No**, the data is **not** automatically moved. You must manually move the data in HDFS. |
-| **Data present, but no partition metadata?** | **No results are returned**. Hive queries the Metastore first; without the partition entry, the data is invisible. |
+#### Q28. End-to-end Data Management & Storage Layers
+
+| Layer | Purpose | Key Technology |
+| :--- | :--- | :--- |
+| **Raw/Transient** | Initial Ingestion | HDFS/S3/Kafka |
+| **Curated Layer** | ETL, Batch Aggregation | **Hive** (using ORC/Snappy), Presto |
+| **Discovery/Presentation** | Low-latency Lookups | **NoSQL** (HBase, Cassandra, ES) |
+
+#### Q29. How to write parameterized Hive queries without logging into the prompt?
+
+Use **`hivevar`** or **`hiveconf`** flags:
+
+```bash
+# Pass variables 'db_name' and 'load_dt'
+hive -hivevar db_name='prodretaildb' -hivevar load_dt='2021-12-26' -f /home/hduser/xyz.hql
+
+# Inside HQL:
+SELECT * FROM ${hivevar:db_name}.tablename
+WHERE loaddt=${hivevar:load_dt};
+```
+
+#### Q30. Views vs. Materialized Views
+
+| Feature | View | Materialized View (MV) |
+| :--- | :--- | :--- |
+| **Data Storage** | No (Logical Query). | Yes (Pre-computed Cache). |
+| **Primary Use** | Security, Query Simplification. | Performance (for BI/dashboards). |
+| **Schema Evolution** | Only sees new columns if created with `SELECT *`. | N/A |
 
 -----
 
-### VI. Data Lifecycle and Advanced Features
+### ❓ VIII. Additional Interview Questions
 
-| Concept | Description/Feature |
+| Question | Answer/Solution |
 | :--- | :--- |
-| **Deduplication (High Volume)** | Use **`ROW_NUMBER() OVER(PARTITION BY... ORDER BY...)`** to assign a rank and keep only the latest record (`rnk = 1`). |
-| **Data Management Layers** | **Raw/Transient** (Ingestion) $\rightarrow$ **Curated Layer** (**Hive, Presto**) $\rightarrow$ **Discovery/Presentation** (**NoSQL, HBase**) for final use. |
-| **Materialized Views** | Pre-computed, cached tables that the CBO automatically uses to speed up aggregate/join queries (e.g., for BI dashboards). |
-| **Transaction Processing** | Modern Hive supports **ACID** transactions. ACID tables no longer strictly require bucketing or ORC format for basic DML. |
-| **Deprecated Interfaces** | **Hive CLI** (replaced by **Beeline**), **MapReduce** engine (replaced by **Tez**), and **SQL Standard Authorization** (replaced by **Ranger**). |
-| **Parameterized Queries** | Use the `-hivevar` flag when running scripts: `hive -hivevar db_name='prod' -f /path/to/script.hql` |
+| **Max size of `STRING` datatype?** | **2 GB**. |
+| **Pivot Array column to rows?** | Use the **`EXPLODE`** function. |
+| **Connect to Hive?** | **Beeline CLI** (replaces Hive CLI), JDBC/ODBC, Spark.sql(). |
+| **Multi-line comment supported?** | **No**. |
+| **Partition data present, but no metadata?** | **D. No result are returned**. Hive relies on the Metastore entry; without it, the data is invisible. |
+| **Archiving a Partition Benefit?** | **D. reduces the number of files stored**. |
+| **Hive most suitable for?** | Data warehouse applications with **static/incremental data** where **fast response time is not required**. |
+| **Schema Evolution on View (Specific)** | If a view is created with an explicit column list, a new column added to the base table **won't be displayed** in the view. |
+| **Workload Management** | Allows creating resource pools to improve parallel query execution, especially with **Hive LLAP**. |
+| **Cost-Based Optimizer Enhancements** | Hive can push down filtering, sorting, and joining operations to the underlying database (e.g., MySQL tables joins pushed to MySQL). |
+| **Deprecated/Unavailable Interfaces** | WebHCat, Hcat CLI, Hive CLI (replaced by **Beeline**), SQL Standard Authorization (replaced by **Ranger**), MapReduce (replaced by **Tez**). |
