@@ -231,8 +231,21 @@ TBLPROPERTIES (
     "skip.footer.line.count"="1"
 );
   
-
 SELECT * FROM default.students_r;
+students.name	students.age	students.class
+John	15	10
+Alice	14	9
+Bob	16	11
+John	15	10
+Alice	14	9
+Bob	16	11
+John	15	10
+Alice	14	9
+Bob	16	11
+John	15	10
+Alice	14	9
+Bob	16	11
+
 
 ```
 
