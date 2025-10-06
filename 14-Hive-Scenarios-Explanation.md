@@ -283,3 +283,98 @@ SET mapreduce.reduce.java.opts=-Xmx3686m;  --JVM heap.
 **Key:** Hive UDFs run inside JVM; **insufficient memory in mappers/reducers** causes heap space errors.
 
 ---
+
+## Q10. Hive query failed with "vertex error" — how to fix it?
+
+**Answer:**
+
+* This error usually occurs when **Tez or Spark execution fails** on a specific vertex/task.
+* **Quick fix:** switch the execution engine to MapReduce:
+
+```sql
+SET hive.execution.engine=mr;
+```
+
+* This forces Hive to run the query using MapReduce instead of Tez/Spark.
+* Reference: [StackOverflow discussion](https://stackoverflow.com/questions/49420108/hive-vertex-failed-vertexname-map)
+
+**Key:** Vertex errors often indicate **engine-specific issues**; using MR can be a workaround for stability.
+
+---
+
+## Q11. How to read fixed-width datasets in Hive?
+
+**Answer:**
+Hive does not natively support fixed-width files, but you can handle them using **`substr()`** or **`RegexSerDe`**.
+
+### Option 1: Using `substr()`
+
+* **Example file `students_fixed.txt`:**
+
+```
+vi /home/hduser/students_fixed.txt
+Jackdosan Rag      37
+Ecooler Eddiee     27
+
+hadoop fs -mkdir /user/hive/warehouse/students_fixed
+hadoop fs -put /home/hduser/students_fixed.txt /user/hive/warehouse/students_fixed/
+```
+
+* **Step 1: Create table with single string column**
+
+```sql
+CREATE EXTERNAL TABLE default.raw_students(line STRING)
+LOCATION '/user/hive/warehouse/students_fixed/';
+```
+
+* **Step 2: Parse fields using `substr()`**
+
+```sql
+SELECT
+    TRIM(SUBSTR(line,1,18)) AS name,
+    CAST(TRIM(SUBSTR(line,19,2)) AS INT) AS age
+FROM default.raw_students;
+```
+
+* **Optional:** Insert into a CSV-style table
+
+```sql
+CREATE TABLE default.students_parsed(name STRING, age INT)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ',';
+
+INSERT INTO default.students_parsed
+SELECT
+    TRIM(SUBSTR(line,1,18)),
+    CAST(TRIM(SUBSTR(line,19,2)) AS INT)
+FROM default.raw_students;
+```
+
+### Option 2: Using RegexSerDe
+
+* **Step 1: Create table with RegexSerDe**
+
+```sql
+CREATE EXTERNAL TABLE default.students_regex (
+    name STRING,
+    age STRING
+)
+ROW FORMAT SERDE 'org.apache.hadoop.hive.contrib.serde2.RegexSerDe'
+WITH SERDEPROPERTIES (
+    "input.regex" = "(.{18})(.{2})"
+)
+LOCATION '/user/hive/warehouse/students_fixed/';
+```
+
+* **Step 2: Query and cast fields**
+
+```sql
+SELECT TRIM(name) AS name, CAST(TRIM(age) AS INT) AS age
+FROM default.students_regex;
+```
+
+**Key:**
+
+* `substr()` + `trim()` works for **simple parsing**.
+* **RegexSerDe** is cleaner for **structured fixed-width files**.
+
+---
