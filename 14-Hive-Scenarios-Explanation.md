@@ -46,9 +46,9 @@ set hive.vectorized.exec.enabled=true;
 
 * These settings last **only for the current HQL session**.
 
-### 2. Job / Oozie Level
+### 2. Job / Oozie Level (Temporary)
 
-* Modify `hive-site.xml` directly and submit the job via Oozie or other workflow tools.
+* If you are using a job scheduler (like Oozie) that packages and executes your job, you can include a *custom `hive-site.xml`* containing only the necessary overrides.
 * Settings are applied **for jobs using that config**.
 
 ### 3. Cluster / Admin Level (Permanent)
