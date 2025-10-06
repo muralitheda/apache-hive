@@ -333,8 +333,8 @@ LOCATION '/user/hive/warehouse/students_fixed/';
 
 ```sql
 SELECT
-    TRIM(SUBSTR(line,1,18)) AS name,
-    CAST(TRIM(SUBSTR(line,19,2)) AS INT) AS age
+    TRIM(SUBSTR(line,1,19)) AS name,
+    CAST(TRIM(SUBSTR(line,20,2)) AS INT) AS age
 FROM default.raw_students;
 ```
 
@@ -346,8 +346,8 @@ ROW FORMAT DELIMITED FIELDS TERMINATED BY ',';
 
 INSERT INTO default.students_parsed
 SELECT
-    TRIM(SUBSTR(line,1,18)),
-    CAST(TRIM(SUBSTR(line,19,2)) AS INT)
+    TRIM(SUBSTR(line,1,19)),
+    CAST(TRIM(SUBSTR(line,20,2)) AS INT)
 FROM default.raw_students;
 ```
 
@@ -364,7 +364,7 @@ CREATE TABLE default.students_regex (
 )
 ROW FORMAT SERDE 'org.apache.hadoop.hive.contrib.serde2.RegexSerDe'
 WITH SERDEPROPERTIES (
-    "input.regex" = "(.{18})(.{2})"
+    "input.regex" = "(.{19})(.{2})"
 )
 LOCATION '/user/hive/warehouse/students_fixed/';
 ```
