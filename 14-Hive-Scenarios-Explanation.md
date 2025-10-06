@@ -163,7 +163,18 @@ Bob     16    11
 
 ✅ The header (`Name,Age,Class`) and footer (`Summary: 3 rows`) are **skipped automatically**.
 
+---
 
+## Q6. What is the maximum size of the `STRING` data type in Hive?
 
+**Answer:**
+
+* Maximum size of `STRING` in Hive is **2 GB** per value.
+* **Practical limit** depends on:
+
+  * **Available memory** – large strings may cause OOM errors.
+  * **File format** – ORC/Parquet handle large strings more efficiently than text files.
+
+**Key:** `STRING` is variable-length; actual usable size may be smaller than 2 GB.
 
 ---
