@@ -104,3 +104,66 @@ AND a.rollno = b.rollno;
 
 ---
 
+## Q5. How to skip header/footer rows from a table in Hive?
+
+**Answer:**
+
+* Use **table properties** when creating or altering the table:
+
+```sql
+-- Skip first 2 header rows
+TBLPROPERTIES ("skip.header.line.count"="2");
+
+-- Skip last 1 footer row
+TBLPROPERTIES ("skip.footer.line.count"="1");
+```
+
+* Applies when reading data from **text/CSV files**.
+* Useful for **ignoring file headers or summary/footer lines**.
+
+**Key:** Only works for **external or managed tables with text-based formats**.
+
+**Example:**
+
+```sql
+vi /home/hduser/students.csv
+Name,Age,Class
+John,15,10
+Alice,14,9
+Bob,16,11
+Summary: 3 rows
+
+hadoop fs -put /home/hduser/students.csv /user/hduser/students.csv
+
+--hive
+
+DROP TABLE IF EXISTS default.students;
+
+CREATE EXTERNAL TABLE default.students(
+    Name STRING,
+    Age INT,
+    Class STRING
+)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+STORED AS TEXTFILE
+LOCATION '/user/hduser/students.csv'
+TBLPROPERTIES (
+    "skip.header.line.count"="1",
+    "skip.footer.line.count"="1"
+);
+
+SELECT * FROM students;
+
+John    15    10
+Alice   14    9
+Bob     16    11
+
+```
+
+✅ The header (`Name,Age,Class`) and footer (`Summary: 3 rows`) are **skipped automatically**.
+
+
+
+
+---
