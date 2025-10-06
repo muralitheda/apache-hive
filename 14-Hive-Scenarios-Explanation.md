@@ -323,7 +323,9 @@ hadoop fs -put /home/hduser/students_fixed.txt /user/hive/warehouse/students_fix
 * **Step 1: Create table with single string column**
 
 ```sql
-CREATE EXTERNAL TABLE default.raw_students(line STRING)
+DROP TABLE IF EXISTS default.raw_students;
+
+CREATE TABLE default.raw_students(line STRING)
 LOCATION '/user/hive/warehouse/students_fixed/';
 ```
 
@@ -354,7 +356,9 @@ FROM default.raw_students;
 * **Step 1: Create table with RegexSerDe**
 
 ```sql
-CREATE EXTERNAL TABLE default.students_regex (
+DROP TABLE IF EXISTS default.students_regex;
+
+CREATE TABLE default.students_regex (
     name STRING,
     age STRING
 )
