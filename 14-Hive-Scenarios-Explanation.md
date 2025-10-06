@@ -262,17 +262,19 @@ Bob	16	11
 ```sql
 -- Mapper memory
 SET mapreduce.map.memory.mb=4096;
-SET mapreduce.map.java.opts=-Xmx3686m;
+SET mapreduce.map.java.opts=-Xmx3686m; --JVM heap.
 
 -- Reducer memory
 SET mapreduce.reduce.memory.mb=4096;
-SET mapreduce.reduce.java.opts=-Xmx3686m;
+SET mapreduce.reduce.java.opts=-Xmx3686m;  --JVM heap.
 ```
 
 **Tips:**
 
-* Adjust **memory values** according to dataset size.
-* For **large datasets**, consider **splitting data** or **optimizing the UDF** to reduce memory usage.
+* **Increase memory** for mappers/reducers: `mapreduce.map.memory.mb`, `mapreduce.reduce.memory.mb`, and corresponding `-Xmx`.
+* **Optimize UDFs** to process rows individually and avoid large in-memory buffers.
+* **Split large files** and/or use **efficient formats** (ORC/Parquet) and execution engines (Tez/Spark).
+
 * See references:
 
   * [AWS EMR guide](https://aws.amazon.com/premiumsupport/knowledge-center/emr-hive-outofmemoryerror-heap-space/)
