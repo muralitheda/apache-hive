@@ -30,3 +30,33 @@ set hive.fetch.task.conversion;
 
 ---
 
+## Q3. How to change Hive configs permanently within the current HQL session / cluster / job level?
+
+**Answer:**
+
+### 1. Session / Query Level (Temporary)
+
+* Set properties for the current session only:
+
+```sql
+set hive.exec.engine=mr;
+set hive.map.size=1024m;
+set hive.vectorized.exec.enabled=true;
+```
+
+* These settings last **only for the current HQL session**.
+
+### 2. Job / Oozie Level
+
+* Modify `hive-site.xml` directly and submit the job via Oozie or other workflow tools.
+* Settings are applied **for jobs using that config**.
+
+### 3. Cluster / Admin Level (Permanent)
+
+* Admin can change configs cluster-wide using:
+
+  * `hive-site.xml` on all nodes
+  * Cluster management tools like **Ambari, Cloudera Manager, EMR Manager, Dataproc Manager**
+
+---
+
