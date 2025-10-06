@@ -65,3 +65,42 @@ hive -hiveconf hive.exec.engine=mr -f my_query.hql
 
 ---
 
+## Q4. Can I use multiple columns in a subquery `WHERE ... IN` clause in Hive?
+
+**Answer:**
+
+* **Hive does not support multi-column `IN` subqueries** like:
+
+```sql
+SELECT * FROM tableA
+WHERE (A.id, A.name, A.Roll_no) IN (
+    SELECT Id, name, roll_no FROM tableB
+);
+```
+
+* **Workarounds:**
+
+**Option 1: Use `CONCAT`**
+
+```sql
+SELECT * FROM tableA
+WHERE CONCAT(A.id, A.name, A.Roll_no) IN (
+    SELECT CONCAT(Id, name, roll_no) FROM tableB
+);
+```
+
+**Option 2: Use `JOIN`**
+
+```sql
+SELECT a.*
+FROM tableA a
+INNER JOIN tableB b
+ON a.id = b.id
+AND a.name = b.name
+AND a.rollno = b.rollno;
+```
+
+**Key:** Multi-column matching is supported via `JOIN` or `CONCAT`, not direct multi-column `IN`.
+
+---
+
