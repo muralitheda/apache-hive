@@ -246,9 +246,38 @@ John	15	10
 Alice	14	9
 Bob	16	11
 
-
 ```
-
-
 ---
 
+
+## Q9. How to resolve `OutOfMemoryError: Java heap space` in Hive when using UDFs?
+
+**Scenario:**
+
+* A UDF (custom java code or python code) works fine on small datasets (e.g., transcript masking).
+* Fails with **OutOfMemoryError** when dataset grows to GBs (e.g., audio-to-text data).
+
+**Solution:** Increase memory for MapReduce tasks:
+
+```sql
+-- Mapper memory
+SET mapreduce.map.memory.mb=4096;
+SET mapreduce.map.java.opts=-Xmx3686m;
+
+-- Reducer memory
+SET mapreduce.reduce.memory.mb=4096;
+SET mapreduce.reduce.java.opts=-Xmx3686m;
+```
+
+**Tips:**
+
+* Adjust **memory values** according to dataset size.
+* For **large datasets**, consider **splitting data** or **optimizing the UDF** to reduce memory usage.
+* See references:
+
+  * [AWS EMR guide](https://aws.amazon.com/premiumsupport/knowledge-center/emr-hive-outofmemoryerror-heap-space/)
+  * [StackOverflow discussion](https://stackoverflow.com/questions/29673053/java-lang-outofmemoryerror-java-heap-space-with-hive)
+
+**Key:** Hive UDFs run inside JVM; **insufficient memory in mappers/reducers** causes heap space errors.
+
+---
