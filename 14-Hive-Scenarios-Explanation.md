@@ -133,7 +133,8 @@ Alice,14,9
 Bob,16,11
 Summary: 3 rows
 
-hadoop fs -put /home/hduser/students.csv /user/hduser/students.csv
+hadoop fs -mkdir /user/hive/warehouse/students/
+hadoop fs -put /home/hduser/students.csv /user/hive/warehouse/students/
 
 --hive
 
@@ -147,14 +148,13 @@ CREATE EXTERNAL TABLE default.students(
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY ','
 STORED AS TEXTFILE
-LOCATION '/user/hduser/students.csv'
+LOCATION '/user/hive/warehouse/students/'
 TBLPROPERTIES (
     "skip.header.line.count"="1",
     "skip.footer.line.count"="1"
 );
 
 SELECT * FROM students;
-
 John    15    10
 Alice   14    9
 Bob     16    11
