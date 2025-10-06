@@ -1,6 +1,6 @@
-# Hive Scenarios and Real-Time Questions
 
-**Q1. How to see the default value set for a config in Hive?**
+
+## Q1. How to see the default value set for a config in Hive?
 
 Run the `SET` command with the property name:
 
@@ -15,7 +15,7 @@ set hive.fetch.task.conversion;
 
 ---
 
-**Q2. Why does a `SELECT *` query in Hive not run MapReduce/Tez/Spark?**
+## Q2. Why does a `SELECT *` query in Hive not run MapReduce/Tez/Spark?
 
 **Answer:**
 
@@ -29,3 +29,4 @@ set hive.fetch.task.conversion;
 * **more** – Extended optimization for filters/projections (default).
 
 ---
+
