@@ -154,7 +154,7 @@ TBLPROPERTIES (
     "skip.footer.line.count"="1"
 );
 
-SELECT * FROM students;
+SELECT * FROM default.students;
 John    15    10
 Alice   14    9
 Bob     16    11
@@ -178,3 +178,64 @@ Bob     16    11
 **Key:** `STRING` is variable-length; actual usable size may be smaller than 2 GB.
 
 ---
+
+Here’s a **short, GitHub-outline-friendly version** of your question:
+
+---
+
+## Q7. How to access data in multiple HDFS subdirectories using a single Hive table?
+
+**Answer:**
+
+* Hive can read data **recursively from subdirectories** using these settings:
+
+```sql
+-- Enable recursive reading of HDFS directories
+SET mapred.input.dir.recursive=true;
+
+-- Allow Hive to support subdirectories
+SET hive.mapred.supports.subdirectories=true;
+```
+
+* Example HDFS layout:
+
+```bash
+hadoop fs -mkdir /user/hive/warehouse/students/cust1
+hadoop fs -mkdir /user/hive/warehouse/students/cust1/cust2
+hadoop fs -mkdir /user/hive/warehouse/students/cust3
+
+hadoop fs -put /home/hduser/students.csv /user/hive/warehouse/students/cust1/
+hadoop fs -put /home/hduser/students.csv /user/hive/warehouse/students/cust1/cust2/
+hadoop fs -put /home/hduser/students.csv /user/hive/warehouse/students/cust3/
+
+--hive
+---- 1. Enable recursive reading of HDFS directories
+SET mapred.input.dir.recursive=true;
+
+---- 2. Allow Hive to support subdirectories
+SET hive.mapred.supports.subdirectories=true;
+
+DROP TABLE IF EXISTS default.students_r;
+
+CREATE TABLE default.students_r(
+    Name STRING,
+    Age INT,
+    Class STRING
+)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+STORED AS TEXTFILE
+LOCATION '/user/hive/warehouse/students/'
+TBLPROPERTIES (
+    "skip.header.line.count"="1",
+    "skip.footer.line.count"="1"
+);
+  
+
+SELECT * FROM default.students_r;
+
+```
+
+
+---
+
