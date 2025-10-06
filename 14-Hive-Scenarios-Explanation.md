@@ -199,7 +199,7 @@ SET hive.mapred.supports.subdirectories=true;
 
 * Example HDFS layout:
 
-```bash
+```sql
 hadoop fs -mkdir /user/hive/warehouse/students/cust1
 hadoop fs -mkdir /user/hive/warehouse/students/cust1/cust2
 hadoop fs -mkdir /user/hive/warehouse/students/cust3
