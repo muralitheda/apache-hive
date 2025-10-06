@@ -44,6 +44,11 @@ set hive.map.size=1024m;
 set hive.vectorized.exec.enabled=true;
 ```
 
+* Hive CLI / Script Level: `SET` command or `-hiveconf`
+```bash
+hive -hiveconf hive.exec.engine=mr -f my_query.hql
+```
+
 * These settings last **only for the current HQL session**.
 
 ### 2. Job / Oozie Level (Temporary)
