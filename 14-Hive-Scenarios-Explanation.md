@@ -750,3 +750,13 @@ hive -f /home/hduser/abc.hql -i /home/hduser/paramfile.txt
 * Use **multi-level partitions** only when necessary and carefully manage them.
 
 ---
+
+## Q19. What Happens to Partitions When Dropping Hive Tables?
+
+| Table Type | Drop Table Behavior     | Partitions Dropped? | Data Dropped? |
+| ---------- | ----------------------- | ------------------- | ------------- |
+| Managed    | Metadata + data removed | Yes                 | Yes           |
+| External   | Only metadata removed   | No                  | No            |
+
+---
+
