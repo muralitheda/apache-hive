@@ -807,3 +807,158 @@ hive -f /home/hduser/abc.hql -i /home/hduser/paramfile.txt
 3. Automate **partition retention** to prevent small files and save storage.
 
 ---
+
+## Q21. How to Recover Dropped Hive Tables with Partitions
+
+### **1. External Table Dropped by Mistake**
+
+* **Scenario:** Only metadata is lost; data in HDFS is intact.
+* **Recovery Steps:**
+
+**Step 1. Create External Table**
+    
+```sql
+USE default;
+
+-- Drop if exists
+DROP TABLE IF EXISTS default.ext_sales;
+
+-- Create external table
+CREATE EXTERNAL TABLE default.ext_sales (
+    order_id INT,
+    customer STRING,
+    amount DOUBLE
+)
+PARTITIONED BY (dt STRING)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+LOCATION '/user/hduser/ext_sales_data';
+
+vi /home/hduser/sales1.csv
+101,John,250.50
+102,Alice,300.00
+
+vi /home/hduser/sales2.csv
+103,Bob,150.75
+104,Eve,400.00
+
+hadoop fs -mkdir -p /user/hduser/ext_sales_data/dt=2025-10-01
+hadoop fs -mkdir -p /user/hduser/ext_sales_data/dt=2025-10-02
+
+hadoop fs -put /home/hduser/sales1.csv /user/hduser/ext_sales_data/dt=2025-10-01/
+hadoop fs -put /home/hduser/sales2.csv /user/hduser/ext_sales_data/dt=2025-10-02/
+
+ALTER TABLE default.ext_sales ADD PARTITION (dt='2025-10-01') LOCATION '/user/hduser/ext_sales_data/dt=2025-10-01/';
+ALTER TABLE default.ext_sales ADD PARTITION (dt='2025-10-02') LOCATION '/user/hduser/ext_sales_data/dt=2025-10-02/';
+
+SELECT * FROM default.ext_sales;
+
+```
+
+**Step 2: Drop Table by Mistake**
+```sql
+DROP TABLE default.ext_sales;
+
+--Data in /user/hduser/ext_sales_data/ still exists in HDFS.
+```
+
+**Step 3: Recover External Table**
+```sql
+-- Recreate external table
+CREATE EXTERNAL TABLE default.ext_sales (
+    order_id INT,
+    customer STRING,
+    amount DOUBLE
+)
+PARTITIONED BY (dt STRING)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+LOCATION '/user/hduser/ext_sales_data';
+
+-- Repair partitions
+MSCK REPAIR TABLE default.ext_sales;
+
+-- Query to verify recovery
+SELECT * FROM default.ext_sales;
+```
+
+
+### **2. Managed Table Dropped by Mistake**
+
+* **Scenario:** Data is removed along with metadata, but can sometimes be recovered from **HDFS trash**.
+* **Recovery Steps:**
+
+**Step 1: Create Managed Table**
+
+```sql
+USE default;
+
+DROP TABLE IF EXISTS default.mng_sales;
+
+CREATE TABLE default.mng_sales (
+    order_id INT,
+    customer STRING,
+    amount DOUBLE
+)
+PARTITIONED BY (dt STRING)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ',';
+
+LOAD DATA LOCAL INPATH '/home/hduser/sales1.csv' INTO TABLE default.mng_sales PARTITION (dt='2025-10-01');
+LOAD DATA LOCAL INPATH '/home/hduser/sales2.csv' INTO TABLE default.mng_sales PARTITION (dt='2025-10-02');
+
+SELECT * FROM default.mng_sales;
+
+```
+
+**Step 2: Drop Managed Table by Mistake**
+
+```sql
+-- Check the current value
+hdfs getconf -confKey fs.trash.interval
+
+-- if it is 0 then you have to update it in the core-site.xml
+<property>
+  <name>fs.trash.interval</name>
+  <value>60</value> <!-- trash retention in minutes -->
+  <description>HDFS trash retention interval for testing</description>
+</property>
+
+
+DROP TABLE default.mng_sales;
+--Data goes to HDFS trash (if trash enabled).
+```
+
+**Step 3: Recover Managed Table**
+
+* Check trash location, e.g., hadoop fs -ls -R /user/hive/.Trash/Current/default/mng_sales/
+* Recreate table:
+
+```sql
+CREATE TABLE default.mng_sales (
+    order_id INT,
+    customer STRING,
+    amount DOUBLE
+)
+PARTITIONED BY (dt STRING)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ',';
+
+LOAD DATA INPATH '/user/hive/.Trash/Current/default/mng_sales/dt=2025-10-01/sales1.csv' 
+INTO TABLE default.mng_sales PARTITION (dt='2025-10-01');
+
+LOAD DATA INPATH '/user/hive/.Trash/Current/default/mng_sales/dt=2025-10-02/sales2.csv' 
+INTO TABLE default.mng_sales PARTITION (dt='2025-10-02');
+
+SELECT * FROM default.mng_sales;
+
+```
+
+### ✅ Key Points
+
+* **External table:** Only metadata lost → recover with `CREATE EXTERNAL TABLE + MSCK REPAIR`.
+* **Managed table:** Data + metadata lost → recover from HDFS trash, then recreate table and reload.
+* **Best Practice:** Schedule **backups of metadata and important managed tables** to avoid permanent loss.
+
+---
+
