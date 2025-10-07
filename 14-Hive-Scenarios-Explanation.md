@@ -665,7 +665,7 @@ hive -hivevar db_name='default' -hivevar load_dt='2023-08-10 10:00:00' -f /home/
 
 ```sql
 SELECT * 
-FROM ${db_name}.newtable
+FROM ${db_name}.oldtable
 WHERE ts='${load_dt}';
 ```
 
