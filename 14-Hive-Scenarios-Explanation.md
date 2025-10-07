@@ -539,3 +539,41 @@ INSERT OVERWRITE TABLE customers1 VALUES ('4', 'Rohit');
 * Allows controlled updates via `INSERT OVERWRITE`.
 
 ---
+
+
+## Q14. How to Change a Hive Table from External to Managed and Vice Versa?
+
+```sql
+
+USE default;
+
+DROP TABLE IF EXISTS customers3;
+
+CREATE EXTERNAL TABLE customers3 (
+  userid STRING,
+  name STRING
+)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+STORED AS ORC
+LOCATION '/user/hduser/custdata2'
+TBLPROPERTIES ("orc.compress"="SNAPPY");
+
+-- Convert External → Managed
+ALTER TABLE customers3 SET TBLPROPERTIES('EXTERNAL'='FALSE');
+
+-- Verify
+DESCRIBE FORMATTED customers3;
+
+-- Convert Managed → External
+ALTER TABLE customers3 SET TBLPROPERTIES('EXTERNAL'='TRUE');
+
+-- Verify
+DESCRIBE FORMATTED customers3;
+```
+
+**Note:**
+Only metadata changes — data location remains the same.
+Managed tables delete data on `DROP`; external tables don’t.
+
+---
