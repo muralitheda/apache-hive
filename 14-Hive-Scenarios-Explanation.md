@@ -655,12 +655,6 @@ This setup ensures **efficient data processing, optimized storage, and accessibl
 
 #### 1. Using `hivevar` Parameters
 
-**Command:**
-
-```bash
-hive -hivevar db_name='default' -hivevar load_dt='2023-08-10 10:00:00' -f /home/hduser/xyz.hql
-```
-
 **Inside `xyz.hql`:**
 
 ```sql
@@ -669,22 +663,28 @@ FROM ${db_name}.oldtable
 WHERE ts='${load_dt}';
 ```
 
+**Command:**
+
+```bash
+hive -hivevar db_name='default' -hivevar load_dt='2023-08-10 10:00:00' -f /home/hduser/xyz.hql
+```
+
 * `${db_name}` and `${load_dt}` are replaced at runtime.
 * Works for **any environment** by just changing the parameter values.
 
 #### 2. Using a Parameter File
 
+**Inside `paramfile.txt`:**
+
+```
+set db_name=default;
+set load_dt=2023-08-10 10:00:00;
+```
+
 **Command:**
 
 ```bash
 hive -f /home/hduser/xyz.hql -i /home/hduser/paramfile.txt
-```
-
-**Inside `paramfile.txt`:**
-
-```
-db_name='default'
-load_dt='2023-08-10 10:00:00'
 ```
 
 **Advantages:**
