@@ -382,3 +382,107 @@ FROM default.students_regex;
 * **RegexSerDe** is cleaner for **structured fixed-width files**.
 
 ---
+
+## 🧩 Q12. How to Remove Duplicates in Hive?
+
+---
+
+### 1️⃣ Create sample data
+
+```sql
+USE default;
+
+-- Drop if exists for rerun convenience
+DROP TABLE IF EXISTS default.oldtable;
+
+-- Create sample table
+CREATE TABLE default.oldtable (
+  id INT,
+  name STRING,
+  phone STRING,
+  ts STRING
+);
+
+-- Insert sample records (with duplicates)
+INSERT INTO default.oldtable VALUES
+(1, 'Aarav',  '999110045', '2023-08-10 10:00:00'),
+(1, 'Aarav',  '999110045', '2023-08-10 10:00:00'),
+(2, 'Meera',  '988220078', '2023-08-12 11:30:00'),
+(2, 'Meera',  '988220078', '2023-08-13 09:45:00'),
+(3, 'Rohit',  '977330012', '2023-08-09 08:15:00'),
+(3, 'Rohit',  '977330012', '2023-08-09 08:15:00'),
+(4, 'Kavya',  '966440078', '2023-08-14 15:20:00'),
+(4, 'Kavya',  '966440078', '2023-08-15 16:00:00');
+```
+
+---
+
+### 2️⃣ Option 1 — Small dataset (In-place deduplication)
+
+#### 🟢 Case A: Remove **exact** duplicates
+
+```sql
+INSERT OVERWRITE TABLE default.oldtable
+SELECT DISTINCT * FROM default.oldtable;
+```
+
+#### 🟢 Case B: Keep only **latest record per person**
+
+(if duplicates differ by timestamp)
+
+```sql
+INSERT OVERWRITE TABLE default.oldtable
+SELECT id, name, phone, ts
+FROM (
+    SELECT *,
+           ROW_NUMBER() OVER (PARTITION BY id, name, phone ORDER BY ts DESC) AS rnk
+    FROM default.oldtable
+) t
+WHERE rnk = 1;
+
+SELECT * FROM default.oldtable;
+```
+
+✅ **Result after cleanup:**
+
+| id | name  | phone      | ts                  |
+| -- | ----- | ---------- | ------------------- |
+| 1  | Aarav | 9991100456 | 2023-08-10 10:00:00 |
+| 2  | Meera | 9882200789 | 2023-08-13 09:45:00 |
+| 3  | Rohit | 9773300123 | 2023-08-09 08:15:00 |
+| 4  | Kavya | 9664400788 | 2023-08-15 16:00:00 |
+
+---
+
+### 3️⃣ Option 2 — Large dataset (Use a new table, then swap)
+
+```sql
+DROP TABLE IF EXISTS default.newtable;
+
+CREATE TABLE default.newtable AS
+SELECT id, name, phone, ts
+FROM (
+    SELECT *,
+           ROW_NUMBER() OVER (PARTITION BY id, name, phone ORDER BY ts DESC) AS rnk
+    FROM default.oldtable
+) t
+WHERE rnk = 1;
+
+-- Option 1: Replace old table
+DROP TABLE default.oldtable;
+ALTER TABLE default.newtable RENAME TO oldtable;
+
+-- Option 2: If old table cannot be dropped
+INSERT OVERWRITE TABLE default.oldtable SELECT * FROM default.newtable;
+DROP TABLE default.newtable;
+```
+
+---
+
+✅ **Key points:**
+
+* Use `DISTINCT` for literal duplicate rows.
+* Use `ROW_NUMBER()` for deduplication by key (keep latest).
+* Use new-table approach for large tables (safer, less memory pressure).
+
+---
