@@ -577,3 +577,35 @@ Only metadata changes — **data location remains the same.**
 **Managed tables** delete data on `DROP`; **External tables** don’t.  
 
 ---
+
+**Q15. Explain End-to-End Data Management & Data Lineage Explanation**
+
+In our project, we follow a multi-zone data lifecycle — **Raw**, **Curated**, and **Presentation/Discovery**.
+
+**1. Raw Zone:**
+All incoming data — from databases, APIs, Kafka, or files — first lands in a **data lake** such as HDFS, S3, or GCS.
+This zone stores data in its original form, partitioned by date, reusable, versioned, and acts as the single source of truth.
+
+**2. Curated Zone:**
+Data from the raw zone is cleaned, validated, and transformed using **Spark or Hive**.
+We apply deduplication, enrichment, and business rules here.
+Processed outputs are stored in optimized formats (Parquet/ORC) in Hive or BigQuery — ideal for analytics, ETL, and data modeling.
+
+**3. Presentation / Discovery Zone:**
+This layer serves different consumers:
+
+* For **batch analytics**, we use Hive, Presto, or BigQuery.
+* For **real-time access**, we load data into **NoSQL systems** like HBase, Cassandra, or Elasticsearch for dashboards and fast lookups.
+
+**Storage choices:**
+
+* **File systems (HDFS/S3)** → raw, immutable data.
+* **Hive/BigQuery** → curated analytical data.
+* **HBase/Cassandra/ES** → frequently updated or low-latency data.
+
+**Typical Flow:**
+Kafka / Source DB → Raw (HDFS/S3) → Spark / Hive → Curated (Hive / BigQuery) → NoSQL / BI Layer (HBase, Cassandra, ES)
+
+This approach ensures **traceability, consistency, and performance** across the full data lifecycle — from ingestion to analytics and real-time delivery.
+
+---
