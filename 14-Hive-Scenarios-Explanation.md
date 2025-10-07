@@ -643,3 +643,63 @@ Source → Extract → Load → Transform → Load → Reporting
 This setup ensures **efficient data processing, optimized storage, and accessible reporting** for both batch and real-time requirements.
 
 ---
+
+## Q17. How to Point `.hql` Scripts to Production Instead of Non-Prod
+
+### Problem
+
+* The existing `.hql` scripts are **hardcoded** to a non-production database/schema.
+* Need a way to run the same script against **production** without manually changing the database name.
+
+### Solution: Parameterize the Hive Script
+
+#### 1. Using `hivevar` Parameters
+
+**Command:**
+
+```bash
+hive -hivevar db_name='default' -hivevar load_dt='2023-08-10 10:00:00' -f /home/hduser/xyz.hql
+```
+
+**Inside `xyz.hql`:**
+
+```sql
+SELECT * 
+FROM ${db_name}.newtable
+WHERE ts='${load_dt}';
+```
+
+* `${db_name}` and `${load_dt}` are replaced at runtime.
+* Works for **any environment** by just changing the parameter values.
+
+---
+
+#### 2. Using a Parameter File
+
+**Command:**
+
+```bash
+hive -f /home/hduser/xyz.hql -i /home/hduser/paramfile.txt
+```
+
+**Inside `paramfile.txt`:**
+
+```
+db_name='default'
+load_dt='2023-08-10 10:00:00'
+```
+
+**Advantages:**
+
+* No need to edit `.hql` files for different environments.
+* Single command can switch between **dev, test, or prod**.
+* Supports multiple parameters (`dbname`, `load_dt`, `engine`, etc.).
+
+---
+
+✅ **Best Practice:**
+
+* Always parameterize `.hql` scripts using `${variable}` and pass environment-specific values via `hivevar` or a parameter file.
+* Avoid hardcoding environment names to prevent accidental data access or overwrite.
+
+---
