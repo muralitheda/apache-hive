@@ -492,3 +492,54 @@ DROP TABLE default.newtable;
 | Performance Boost   | `CTAS` (`CREATE TABLE AS SELECT`) is optimized in Hive — it skips SerDe overhead and writes data faster.                                                                                          |
 
 ---
+
+## Q13. How to Prevent Duplicate Data Loads in Hive (Immutable Tables)
+
+### Explanation
+
+An **immutable table** in Hive is used to prevent accidental duplicate data loads — for example, in static or confirmed *`dimension`* data such as **calendar, geography, or store** tables.
+
+* The **first insert** into an immutable table succeeds.
+* Any **subsequent insert** fails if the table already contains data.
+* This helps avoid silent duplication when a data load script runs multiple times.
+* However, `INSERT OVERWRITE` is still **allowed**, even when the table is immutable.
+
+### Usage
+
+```sql
+USE default;
+
+DROP TABLE IF EXISTS customers1;
+
+CREATE EXTERNAL TABLE customers1 (
+  userid STRING,
+  name STRING
+)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+LOCATION '/user/hduser/custdata1'
+TBLPROPERTIES ("immutable" = "true");
+```
+
+**Default:** `TBLPROPERTIES("immutable"="false")`
+
+### Example Behavior
+
+```sql
+-- Works: first load
+INSERT INTO customers1 VALUES ('1', 'Aarav'),('2', 'Meera');
+
+-- Fails: second insert attempt
+INSERT INTO customers1 VALUES ('3', 'Phebe');
+
+-- Works: overwrite existing data
+INSERT OVERWRITE TABLE customers1 VALUES ('4', 'Rohit');
+```
+
+### Key Takeaways
+
+* Use for static or reference data that should never be appended again.
+* Prevents duplicate data due to rerun scripts.
+* Allows controlled updates via `INSERT OVERWRITE`.
+
+---
