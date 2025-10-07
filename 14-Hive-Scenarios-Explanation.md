@@ -497,7 +497,7 @@ DROP TABLE default.newtable;
 
 ### Explanation
 
-An **immutable table** in Hive is used to prevent accidental duplicate data loads — for example, in static or confirmed *Dimension* data such as **calendar, geography, or store** tables.
+An **immutable table** in Hive is used to prevent accidental duplicate data loads — for example, in static or confirmed **`Dimension`** data such as **calendar, geography, or store** tables.
 
 * The **first insert** into an immutable table succeeds.
 * Any **subsequent insert** fails if the table already contains data.
