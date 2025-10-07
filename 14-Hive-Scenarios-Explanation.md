@@ -815,7 +815,7 @@ hive -f /home/hduser/abc.hql -i /home/hduser/paramfile.txt
 * **Scenario:** Only metadata is lost; data in HDFS is intact.
 * **Recovery Steps:**
 
-**Step 1. Create External Table**
+Step 1. Create External Table
     
 ```sql
 USE default;
@@ -855,14 +855,15 @@ SELECT * FROM default.ext_sales;
 
 ```
 
-**Step 2: Drop Table by Mistake**
+Step 2: Drop Table by Mistake
+
 ```sql
 DROP TABLE default.ext_sales;
 
 --Data in /user/hduser/ext_sales_data/ still exists in HDFS.
 ```
 
-**Step 3: Recover External Table**
+Step 3: Recover External Table
 ```sql
 -- Recreate external table
 CREATE EXTERNAL TABLE default.ext_sales (
@@ -888,7 +889,7 @@ SELECT * FROM default.ext_sales;
 * **Scenario:** Data is removed along with metadata, but can sometimes be recovered from **HDFS trash**.
 * **Recovery Steps:**
 
-**Step 1: Create Managed Table**
+Step 1: Create Managed Table
 
 ```sql
 USE default;
@@ -911,7 +912,7 @@ SELECT * FROM default.mng_sales;
 
 ```
 
-**Step 2: Drop Managed Table by Mistake**
+Step 2: Drop Managed Table by Mistake
 
 ```sql
 -- Check the current value
@@ -929,7 +930,7 @@ DROP TABLE default.mng_sales;
 --Data goes to HDFS trash (if trash enabled).
 ```
 
-**Step 3: Recover Managed Table**
+Step 3: Recover Managed Table
 
 * Check trash location, e.g., hadoop fs -ls -R /user/hive/.Trash/Current/default/mng_sales/
 * Recreate table:
