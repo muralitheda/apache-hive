@@ -573,7 +573,7 @@ DESCRIBE FORMATTED customers3;
 ```
 
 **Note:**
-Only metadata changes — data location remains the same.
-Managed tables delete data on `DROP`; external tables don’t.
+Only metadata changes — **data location remains the same.**   
+**Managed tables** delete data on `DROP`; **External tables** don’t.  
 
 ---
