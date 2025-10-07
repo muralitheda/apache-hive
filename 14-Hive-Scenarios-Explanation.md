@@ -483,4 +483,12 @@ DROP TABLE default.newtable;
 * Use `ROW_NUMBER()` for deduplication by key (keep latest).
 * Use the new-table approach for large tables — safer, less memory pressure, and easier rollback.
 
+| Aspect              | Explanation                                                                                                                                                                                       |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Memory Management   | `INSERT OVERWRITE` on a huge table requires Hive to read and rewrite the entire dataset in one go. This can consume a lot of memory and may trigger `OutOfMemoryError` or Tez/Spark job failures. |
+| Parallel Processing | When creating a new table with `CREATE TABLE AS SELECT`, Hive can better distribute the load across mappers and reducers — often faster and safer.                                                |
+| Failure Isolation   | If something fails during the new-table creation, your original data remains intact. With `INSERT OVERWRITE`, partial failures can corrupt or lose data.                                          |
+| Easier Rollback     | You can verify the data in the new table before replacing the old one. If it’s wrong, just drop the new table — no harm done.                                                                     |
+| Performance Boost   | `CTAS` (`CREATE TABLE AS SELECT`) is optimized in Hive — it skips SerDe overhead and writes data faster.                                                                                          |
+
 ---
