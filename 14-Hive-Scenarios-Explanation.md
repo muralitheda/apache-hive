@@ -760,3 +760,50 @@ hive -f /home/hduser/abc.hql -i /home/hduser/paramfile.txt
 
 ---
 
+
+## Q20. How to Manage Hive Partitions Automatically
+
+### 1. **Automate Partition Discovery**
+
+* Hive does **not automatically detect partitions** added directly to HDFS.
+* Use:
+
+  ```sql
+  MSCK REPAIR TABLE table_name;
+  ```
+
+  * Scans the HDFS location of the table.
+  * Adds any **new partitions** to Hive metadata.
+* Can be **scheduled periodically** (e.g., via Oozie, Airflow, or cron jobs) to keep metadata in sync.
+
+### 2. **Manage Partition Retention**
+
+* Delete **old partitions** automatically to save storage and improve query performance.
+* Example: Retain only the last 30 days of data:
+
+  ```sql
+  ALTER TABLE table_name DROP IF EXISTS PARTITION (dt<'2025-09-07');
+  ```
+* Can be automated with scripts or workflow schedulers.
+
+### 3. **Automatic Partitioning During ETL**
+
+* When loading data with Hive, you can **use dynamic partitioning**:
+
+  ```sql
+  SET hive.exec.dynamic.partition = true;
+  SET hive.exec.dynamic.partition.mode = nonstrict;
+
+  INSERT INTO TABLE table_name PARTITION (dt)
+  SELECT col1, col2, col3, dt
+  FROM staging_table;
+  ```
+* Hive automatically **creates new partitions** based on the `dt` column.
+
+### ✅ Best Practices
+
+1. Enable **dynamic partitioning** for frequent ETL loads.
+2. Schedule **MSCK REPAIR TABLE** periodically to sync HDFS partitions with Hive metadata.
+3. Automate **partition retention** to prevent small files and save storage.
+
+---
