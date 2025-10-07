@@ -707,3 +707,46 @@ hive -f /home/hduser/abc.hql -i /home/hduser/paramfile.txt
 * Avoid hardcoding environment names to prevent accidental data access or overwrite.
 
 ---
+
+
+## Q18. All About Partitions in Hive
+
+### **Why Partitions are Important**
+
+* Partitions allow Hive to **organize large datasets** into smaller, manageable chunks based on column values (e.g., `date`, `region`, `hour`).
+* They **improve query performance** by enabling **partition pruning**, so Hive reads only relevant data.
+
+---
+
+### **Drawbacks of Improper Partitioning**
+
+1. **Small Partition Volumes (Small Files)**
+
+   * Example: `date/hour` partitions with 5 MB of data each.
+   * Result: Mappers/reducers process tiny amounts of data → poor resource utilization.
+
+2. **High Namenode Overhead**
+
+   * Each partition and file is stored as a separate HDFS object.
+   * Small partitions + high cardinality columns → **large metadata**, increasing Namenode load.
+
+3. **Metadata Mismatch**
+
+   * If partitions are created in HDFS but **not added to Hive metadata**, queries **return no results**.
+   * Always run `ALTER TABLE table_name ADD PARTITION ...` or use `MSCK REPAIR TABLE table_name`.
+
+4. **Complexity in Multi-Level Partitions**
+
+   * Example: `country/state/city/date`
+   * Multi-level partitions require careful management to avoid errors and ensure all partitions are discoverable.
+
+---
+
+### **Best Practices**
+
+* Keep partition size **reasonably large** (e.g., 256 MB – 1 GB).
+* Avoid using **high cardinality columns** for partitioning.
+* Always **sync HDFS partitions with Hive metadata**.
+* Use **multi-level partitions** only when necessary and carefully manage them.
+
+---
