@@ -578,7 +578,7 @@ Only metadata changes — **data location remains the same.**
 
 ---
 
-## Q15. Explain End-to-End Data Management & Data Lineage Explanation**
+## Q15. Explain End-to-End Data Management & Data Lineage Explanation
 
 In our project, we follow a multi-zone data lifecycle — **Raw**, **Curated**, and **Presentation/Discovery**.
 
