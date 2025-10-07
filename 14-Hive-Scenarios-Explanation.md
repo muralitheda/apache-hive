@@ -1090,6 +1090,7 @@ You want Hive to **automatically purge partitions older than a certain period** 
 * Old data is cleaned up from **HDFS**.
 * Hive metastore metadata is updated.
 * Reduces storage and improves query performance on large tables.
+* It may work if the distribution (like Cloudera or AWS EMR) has automatic partition management enabled.
 
 ---
 
