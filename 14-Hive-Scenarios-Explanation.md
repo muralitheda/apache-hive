@@ -383,10 +383,6 @@ FROM default.students_regex;
 
 ---
 
-Here’s your cleaned-up version — no icons, plain markdown, GitHub-outline friendly:
-
----
-
 ## Q12. How to Remove Duplicates in Hive?
 
 ### 1. Create sample data
