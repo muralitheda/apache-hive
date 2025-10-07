@@ -1082,15 +1082,14 @@ df.write.mode("overwrite") \
 
 ---
 
-## Q23. Configure Hive Table Partition Retention (Automatic Purging)
+## Q23. Configure Hive Table Partition Retention (Automatic Purging / Archiving)
 
 **Scenario:**
-You want Hive to **automatically purge partitions older than a certain period** (e.g., 1 year). This ensures:
+You want to **archive and purge old data** from Hive tables, ensuring:
 
-* Old data is cleaned up from **HDFS**.
-* Hive metastore metadata is updated.
-* Reduces storage and improves query performance on large tables.
-* It may work if the distribution (like Cloudera or AWS EMR) has automatic partition management enabled.
+* Only recent partitions (e.g., last 1 year) are retained.
+* Hive metastore metadata and/or actual data in HDFS is cleaned up.
+* Works for **managed and external tables**, **partitioned and non-partitioned**.
 
 ---
 
@@ -1114,22 +1113,7 @@ STORED AS ORC;
 
 ---
 
-### **Step 2: Enable Partition Retention**
-
-```sql
-ALTER TABLE default.customer 
-SET TBLPROPERTIES ('partition.retention.period'='365d');
-```
-
-* `'365d'` = 365 days = **1 year**.
-* Hive will automatically **delete partitions older than 1 year** from both:
-
-  * Hive metastore (metadata)
-  * HDFS location (data files)
-
----
-
-### **Step 3: Insert Sample Data**
+### **Step 2: Insert Sample Data**
 
 ```sql
 INSERT INTO default.customer PARTITION (dt='2024-10-05') VALUES (1,'Alice',100.0);
@@ -1139,22 +1123,88 @@ INSERT INTO default.customer PARTITION (dt='2022-08-15') VALUES (3,'Charlie',300
 
 ---
 
-### **Step 4: Query to Verify**
+### **Step 3: Using `partition.retention.period` (Metadata Only)**
 
 ```sql
-SELECT * FROM default.customer;
+ALTER TABLE default.customer 
+SET TBLPROPERTIES ('partition.retention.period'='365d');
 ```
 
-* Only partitions **within retention period (last 1 year)** are accessible.
-* Partitions older than 1 year will be **automatically purged**.
+> **Note:** This does **not physically delete partitions or data** in standard Hive. It may only mark old partitions in metadata, depending on the Hive distribution.
 
 ---
 
-### **Key Notes:**
+### **Step 4: Purge Old Partitions Programmatically**
 
-* The **purge is automatic**; no manual `DROP PARTITION` is needed.
-* Works for both **managed and external tables**, but for external tables **only metadata** is removed; data must be managed externally.
-* Useful for **archiving, compliance, and reducing storage costs**.
+#### **Option A: Hive Script / SQL**
+
+```sql
+-- Drop partitions older than 1 year
+ALTER TABLE default.customer 
+DROP IF EXISTS PARTITION (dt<'2023-10-07');  -- Use dynamic date in scripts
+```
+
+#### **Option B: Archive Recent Data Only**
+
+* For **partitioned or non-partitioned tables**, create a new table with recent data:
+
+```sql
+-- Keep only last 1 year data
+INSERT OVERWRITE TABLE default.customer
+SELECT * 
+FROM default.customer
+WHERE dt >= '2023-10-07';
+```
+
+* This also acts as an **archive + purge mechanism**.
+
+#### **Option C: MapReduce / Hive / Spark with Controlled Output Files**
+
+* Set **reducers / repartition** to control number of output files and optimize performance:
+
+**Hive Example:**
+
+```sql
+SET mapreduce.job.reduces=4;
+
+INSERT OVERWRITE TABLE default.customer
+SELECT * 
+FROM default.customer
+WHERE dt >= '2023-10-07';
+```
+
+**Spark Example:**
+
+```python
+from datetime import datetime, timedelta
+from pyspark.sql import SparkSession
+
+spark = SparkSession.builder.enableHiveSupport().getOrCreate()
+
+cutoff = (datetime.now() - timedelta(days=365)).strftime('%Y-%m-%d')
+
+df = spark.table("default.customer").filter(f"dt >= '{cutoff}'")
+df.repartition(4).write.mode("overwrite").saveAsTable("default.customer")
+```
+
+* Ensures **old data is purged** and **recent data is archived efficiently** with controlled file output.
+
+---
+
+### **Step 5: Automation**
+
+* Schedule **daily or weekly jobs** (Hive script, Spark, or MR) to automatically archive/purge old partitions.
+* For external tables, only **metadata deletion** occurs; data must be handled separately or backed up.
+
+---
+
+### **Key Points / Best Practices**
+
+1. `partition.retention.period` alone **does not physically purge** data.
+2. Use **ALTER TABLE DROP PARTITION** or **INSERT OVERWRITE** to remove old data.
+3. For large tables, consider **MapReduce/Spark jobs with controlled reducers/repartition** to optimize HDFS output files.
+4. Works for **managed/external tables** and **partitioned/non-partitioned tables**.
+5. Always **backup old data** if needed for compliance or audit purposes.
 
 ---
 
