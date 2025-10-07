@@ -672,8 +672,6 @@ WHERE ts='${load_dt}';
 * `${db_name}` and `${load_dt}` are replaced at runtime.
 * Works for **any environment** by just changing the parameter values.
 
----
-
 #### 2. Using a Parameter File
 
 **Command:**
@@ -694,8 +692,6 @@ load_dt='2023-08-10 10:00:00'
 * No need to edit `.hql` files for different environments.
 * Single command can switch between **dev, test, or prod**.
 * Supports multiple parameters (`dbname`, `load_dt`, `engine`, etc.).
-
----
 
 ✅ **Best Practice:**
 
