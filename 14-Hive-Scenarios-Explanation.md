@@ -609,3 +609,37 @@ Kafka / Source DB → Raw (HDFS/S3) → Spark / Hive → Curated (Hive / BigQuer
 This approach ensures **traceability, consistency, and performance** across the full data lifecycle — from ingestion to analytics and real-time delivery.
 
 ---
+
+## Q16. Who Consumes Data from External Tables and How Processed Data Reaches Reporting?
+
+**1. Data Consumption:**
+
+* External Hive tables are primarily consumed by **other applications** and **reporting/visualization tools**.
+* Processed data is typically stored in **Hive** using **ORC format** with **Snappy compression** for optimized storage and fast access.
+
+**2. Data Access for Reporting:**
+
+* **JDBC/ODBC connections** allow applications or BI tools to query Hive tables directly.
+* Visualization tools like **Tableau, QlikView, Power BI** can connect via ODBC/JDBC to generate dashboards and reports.
+
+**3. Example Data Pipeline:**
+
+```
+Source → Extract → Load → Transform → Load → Reporting
+```
+
+* **Source:** RDBMS, flat files, or streaming (Kafka).
+* **Extract:** Using Sqoop, Hive (managed tables), Spark, or NiFi.
+* **Load:** Into Hive (staging/curated) or NoSQL (for low-latency queries).
+* **Transform:** Using HiveQL, Spark SQL, or ETL scripts.
+* **Load to Target:** Hive external tables, NoSQL, RDBMS, or file system.
+* **Reporting:** Access via BI tools or applications using JDBC/ODBC connections.
+
+**4. Example Scenarios:**
+
+* **Batch Pipeline:** Extract sales data from Oracle → Load to Hive staging → Transform using Spark → Load into Hive external table → Reporting via Tableau.
+* **Real-Time Pipeline:** Stream customer activity from Kafka → Spark Streaming → Load into HBase → Dashboard queries for real-time analytics.
+
+This setup ensures **efficient data processing, optimized storage, and accessible reporting** for both batch and real-time requirements.
+
+---
