@@ -538,7 +538,7 @@ INSERT OVERWRITE TABLE customers1 VALUES ('4', 'Rohit');
 
 ### Key Takeaways
 
-* Use for static or reference data that should never be appended again.
+* **Use for static or reference data that should never be appended again.**
 * Prevents duplicate data due to rerun scripts.
 * Allows controlled updates via `INSERT OVERWRITE`.
 
