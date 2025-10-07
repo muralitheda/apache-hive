@@ -963,3 +963,106 @@ SELECT * FROM default.mng_sales;
 
 ---
 
+## Q22. Discovering Partitions Created by External Systems?
+
+**Scenario:**
+External tools (Spark, Sqoop, scripts) write data directly to Hive’s HDFS partition folders. Hive **does not automatically update its metastore**, so queries won’t see new partitions.
+
+### **1. Use `MSCK REPAIR TABLE`**
+
+* Scans the table’s HDFS location and adds missing partitions to Hive metastore.
+
+```sql
+MSCK REPAIR TABLE sales_ext;
+```
+
+* Verify partitions:
+
+```sql
+SHOW PARTITIONS sales_ext;
+```
+
+### **2. Automated Incremental Partition Addition (Recommended for Large Tables)**
+
+Instead of scanning the full table, you can **add partitions incrementally** as data is loaded.
+
+#### **Option A: Hive Dynamic Partition Inserts**
+
+```sql
+-- Staging table with new data
+CREATE TABLE default.staging_sales (
+    order_id INT,
+    customer STRING,
+    amount DOUBLE,
+    dt STRING
+)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ',';
+
+-- Insert data into partitioned table dynamically
+INSERT INTO TABLE default.sales_ext PARTITION (dt)
+SELECT order_id, customer, amount, dt
+FROM default.staging_sales;
+```
+
+* Hive automatically **adds new partitions** for all `dt` values in staging data.
+
+#### **Option B: `ALTER TABLE ADD PARTITION` in Scripts**
+
+```sql
+-- After loading new data into HDFS partition folder
+ALTER TABLE sales_ext ADD PARTITION (dt='2025-10-03') 
+LOCATION '/user/hduser/ext_sales_data/dt=2025-10-03';
+```
+
+* Can be executed via **Bash, Python, or Spark scripts** immediately after external load.
+
+#### **Option C: External Tools Registering Partitions Programmatically**
+
+**Example with Spark (Scala/PySpark):**
+
+```python
+from pyspark.sql import SparkSession
+from pyspark.sql.types import StructType, StructField, IntegerType, StringType, DoubleType
+
+spark = SparkSession.builder \
+    .appName("Partition Load") \
+    .enableHiveSupport() \
+    .getOrCreate()
+
+schema = StructType([
+    StructField("order_id", IntegerType(), True),
+    StructField("customer", StringType(), True),
+    StructField("amount", DoubleType(), True),
+    StructField("dt", StringType(), True)
+])
+
+df = spark.read.csv(
+    "/user/hduser/ext_sales_data/new_sales.csv",
+    header=False,       # No header in file
+    schema=schema
+)
+
+df.write.mode("overwrite") \
+    .partitionBy("dt") \
+    .format("hive") \
+    .saveAsTable("default.sales_ext")
+```
+
+* Spark automatically writes the partition folders **and updates Hive metastore**.
+* Sqoop also supports `--hive-partition-key` and `--hive-partition-value` for automatic registration.
+
+
+### **3. Notes / Best Practices**
+
+* Partition directories must follow `key=value` format.
+* `MSCK REPAIR TABLE` can be slow for large tables; prefer **incremental addition**.
+* Automated partition addition ensures **immediate visibility** in Hive queries.
+
+
+### ✅ **Benefit**
+
+* Avoids full table scans of HDFS.
+* Partitions are updated **incrementally**, reducing latency and resource usage.
+* Queries can see new data immediately after load.
+
+---
