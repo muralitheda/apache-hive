@@ -1082,3 +1082,78 @@ df.write.mode("overwrite") \
 
 ---
 
+## Q23. Configure Hive Table Partition Retention (Automatic Purging)
+
+**Scenario:**
+You want Hive to **automatically purge partitions older than a certain period** (e.g., 1 year). This ensures:
+
+* Old data is cleaned up from **HDFS**.
+* Hive metastore metadata is updated.
+* Reduces storage and improves query performance on large tables.
+
+---
+
+### **Step 1: Create a Partitioned Table**
+
+```sql
+USE default;
+
+DROP TABLE IF EXISTS default.customer;
+
+CREATE TABLE default.customer (
+    id INT,
+    name STRING,
+    amount DOUBLE
+)
+PARTITIONED BY (dt STRING)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+STORED AS ORC;
+```
+
+---
+
+### **Step 2: Enable Partition Retention**
+
+```sql
+ALTER TABLE default.customer 
+SET TBLPROPERTIES ('partition.retention.period'='365d');
+```
+
+* `'365d'` = 365 days = **1 year**.
+* Hive will automatically **delete partitions older than 1 year** from both:
+
+  * Hive metastore (metadata)
+  * HDFS location (data files)
+
+---
+
+### **Step 3: Insert Sample Data**
+
+```sql
+INSERT INTO default.customer PARTITION (dt='2024-10-05') VALUES (1,'Alice',100.0);
+INSERT INTO default.customer PARTITION (dt='2023-09-01') VALUES (2,'Bob',200.0);
+INSERT INTO default.customer PARTITION (dt='2022-08-15') VALUES (3,'Charlie',300.0);
+```
+
+---
+
+### **Step 4: Query to Verify**
+
+```sql
+SELECT * FROM default.customer;
+```
+
+* Only partitions **within retention period (last 1 year)** are accessible.
+* Partitions older than 1 year will be **automatically purged**.
+
+---
+
+### **Key Notes:**
+
+* The **purge is automatic**; no manual `DROP PARTITION` is needed.
+* Works for both **managed and external tables**, but for external tables **only metadata** is removed; data must be managed externally.
+* Useful for **archiving, compliance, and reducing storage costs**.
+
+---
+
