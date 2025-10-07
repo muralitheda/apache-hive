@@ -674,6 +674,14 @@ hive -hivevar db_name='default' -hivevar load_dt='2023-08-10 10:00:00' -f /home/
 
 #### 2. Using a Parameter File
 
+**Inside `abc.hql`:**
+
+```sql
+SELECT *
+FROM ${hiveconf:db_name}.oldtable
+WHERE ts='${hiveconf:load_dt}';
+```
+
 **Inside `paramfile.txt`:**
 
 ```
@@ -684,7 +692,7 @@ set load_dt=2023-08-10 10:00:00;
 **Command:**
 
 ```bash
-hive -f /home/hduser/xyz.hql -i /home/hduser/paramfile.txt
+hive -f /home/hduser/abc.hql -i /home/hduser/paramfile.txt
 ```
 
 **Advantages:**
