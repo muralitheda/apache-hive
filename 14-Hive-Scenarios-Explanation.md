@@ -1208,3 +1208,248 @@ df.repartition(4).write.mode("overwrite").saveAsTable("default.customer")
 
 ---
 
+## Q24. Small Files Issue in Hive / HDFS? (Small Files Merge | Handling | Compaction | Archiving | Purging)
+
+
+### 1. Problem Context
+
+Small files are one of the biggest scalability problems in Hadoop & Hive.
+Each file, directory, and block in HDFS is represented as an **object in the NameNode’s memory**, consuming roughly **150 bytes per entry**.
+
+**Example:**
+10 million files → ~3 GB of NameNode heap memory.
+Result: slower NameNode performance, high GC overhead, and degraded Hive query execution.
+
+
+### 2. Step 1 – Clean Zero-Byte Files
+
+**Why:**
+MapReduce/Spark jobs often create `_SUCCESS`, `_FAILURE`, or other **0-byte files**.
+Though they use **no HDFS blocks**, they **consume NameNode metadata memory**.
+
+**Command:**
+
+```bash
+hdfs dfs -ls -R /path/to/hdfs/dir | awk '$1 !~ /^d/ && $5 == "0" { print $8 }' | xargs -n100 hdfs dfs -rm
+```
+
+**Notes:**
+
+* Moves files to `.Trash`, then auto-cleared by `fs.trash.interval`.
+* Ideal for **daily cleanup** or **cron jobs** in staging environments.
+
+
+### 3. Step 2 – Use Metadata Governance Tools
+
+**Why:**
+To identify which pipelines (NiFi/Spark streaming) cause excessive small file creation.
+
+**Tools:**
+
+* Cloudera Navigator
+* Apache Atlas
+* AWS Glue Data Catalog
+
+**Purpose:**
+Audit, lineage, and metadata tracking. Preventive step for optimizing ingestion design.
+
+
+### 4. Step 3 – Reduce Partition Explosion
+
+**Problem:**
+Too many partitions = too many directories + small files.
+
+**Solution:**
+Partition **wisely** (daily instead of hourly). Use **bucketing** for finer granularity.
+
+**Hive Config:**
+
+```sql
+SET hive.exec.dynamic.partition=true;
+SET hive.exec.dynamic.partition.mode=nonstrict;
+SET hive.exec.max.dynamic.partitions=1000;
+SET hive.exec.max.dynamic.partitions.pernode=100;
+```
+
+**Tip:**
+
+* Avoid over-partitioning by time or key fields.
+* Roll up small partitions into weekly/monthly aggregates.
+
+
+### 5. Step 4 – Archive Older Data (HAR Files)
+
+**Purpose:**
+Archive infrequently accessed partitions into fewer, larger files using **Hadoop Archives (HAR)**.
+
+**Enable Archive:**
+
+```sql
+SET hive.archive.enabled=true;
+SET hive.archive.har.parentdir.settable=true;
+SET har.partfile.size=1099511627776; -- 1 TB
+```
+
+**Archive Example:**
+
+```sql
+ALTER TABLE customer ARCHIVE PARTITION (year=2023, month=12);
+```
+
+**Unarchive Example:**
+
+```sql
+ALTER TABLE customer UNARCHIVE PARTITION (year=2023, month=12);
+```
+
+**Retention Example:**
+
+```sql
+ALTER TABLE customer SET TBLPROPERTIES ('partition.retention.period'='365d');
+```
+
+**Notes:**
+
+* Archived partitions are read-only and slower to access.
+* Useful for **cold data** or compliance retention.
+* Combine with **purging** to delete data older than 1 year.
+
+
+### 6. Step 5 – Merge Small Files (Hive or Spark)
+
+**Goal:**
+Reduce small file count for **active Hive tables**.
+
+#### Option A: Hive Merge Settings
+
+```sql
+SET hive.merge.mapfiles=true;
+SET hive.merge.mapredfiles=true;
+SET hive.merge.smallfiles.avgsize=104857600;     -- 100 MB
+SET hive.merge.size.per.task=209715200;          -- 200 MB
+SET mapred.max.split.size=68157440;              -- ~65 MB
+SET mapred.min.split.size=68157440;
+SET hive.exec.mappers.bytes.per.mapper=268435456;  -- 256 MB
+SET hive.exec.reducers.bytes.per.reducer=268435456;
+```
+
+**Merge Query (Off-Peak Hours):**
+
+```sql
+INSERT OVERWRITE TABLE table1
+SELECT * FROM table1;
+```
+
+This will rewrite the data into fewer, large files.
+
+
+#### Option B: Spark-Based Merge
+
+```python
+df = spark.read.orc("hdfs:///user/hive/warehouse/table1/")
+df.repartition(4).write.mode("overwrite").orc("hdfs:///user/hive/warehouse/table1/")
+```
+
+Or:
+
+```python
+df.coalesce(4).write.mode("overwrite").parquet("hdfs:///user/hive/warehouse/table1/")
+```
+
+**Tip:**
+
+* Use `repartition()` for shuffle and even file distribution.
+* `coalesce()` for fewer files without shuffle.
+* Run during off-peak or maintenance windows.
+
+
+
+### 7. Step 6 – Apply Hive Compaction (ACID Tables)
+
+**Applies To:**
+Hive transactional tables (e.g., ORC with `transactional=true`).
+
+**Enable Compactor:**
+
+```sql
+SET hive.compactor.initiator.on=true;
+SET hive.compactor.worker.threads=2;
+```
+
+**Manual Compaction:**
+
+```sql
+ALTER TABLE sales_data COMPACT 'minor';
+ALTER TABLE sales_data COMPACT 'major';
+```
+
+**Notes:**
+
+* **Minor compaction:** merges delta files only.
+* **Major compaction:** merges base + delta = full consolidation.
+* Schedule with cron or Metastore triggers.
+
+
+
+### 8. Step 7 – Purge or Archive Mechanism
+
+For **retention management and cleanup**:
+
+**Use Case:**
+You want to keep **only the last 1 year** of partition data.
+
+```sql
+ALTER TABLE customer SET TBLPROPERTIES ('partition.retention.period'='365d');
+```
+
+Then purge older partitions manually or via scheduled job:
+
+```sql
+INSERT OVERWRITE TABLE customer
+SELECT * FROM customer
+WHERE order_date >= date_sub(current_date, 365);
+```
+
+**Optionally:**
+Archive old data to HAR before deleting.
+
+
+
+### 9. Step 8 – Reduce Files During Ingestion
+
+When streaming data using **NiFi or Spark Structured Streaming**,
+you can control file count before data lands in Hive:
+
+**Spark Example:**
+
+```python
+df.write.mode("append").option("maxRecordsPerFile", 500000).saveAsTable("table1")
+```
+
+**NiFi Example:**
+Batch flowfiles before pushing to HDFS.
+
+
+### Summary Table
+
+| Step | Strategy             | Purpose                       | Tools / Commands               |
+| ---- | -------------------- | ----------------------------- | ------------------------------ |
+| 1    | Clean 0-byte files   | Reduce metadata overhead      | HDFS script                    |
+| 2    | Use governance tools | Identify small-file producers | Navigator / Atlas              |
+| 3    | Reduce partitions    | Avoid partition explosion     | Hive configs                   |
+| 4    | Archive old data     | Minimize cold storage files   | HAR / Hive archive             |
+| 5    | Merge small files    | Optimize active tables        | Hive merge / Spark repartition |
+| 6    | Apply compaction     | Consolidate delta files       | Hive ACID compactor            |
+| 7    | Purge old data       | Retention enforcement         | Retention & purge SQL          |
+| 8    | Control ingestion    | Prevent small files creation  | NiFi / Spark settings          |
+
+
+### Key Takeaways
+
+* Prevent small files **at ingestion time**.
+* Periodically **merge and compact** active data.
+* **Archive or purge** inactive data to free space and memory.
+* Monitor NameNode heap utilization and file count regularly.
+* Combine Hive + Spark + governance tools for full control.
+
+---
