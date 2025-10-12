@@ -1454,7 +1454,7 @@ Batch flowfiles before pushing to HDFS.
 
 ---
 
-## 25. If we change the partition location of a Hive table using the `ALTER TABLE` command with the **NEW LOCATION** option, then the data for that partition in the table:
+## Q25. If we change the partition location of a Hive table using the `ALTER TABLE` command with the **NEW LOCATION** option, then the data for that partition in the table:
 
 **A.** `also moves automatically to the new location`  
 **B.** has to be dropped and recreated  
@@ -1463,7 +1463,7 @@ Batch flowfiles before pushing to HDFS.
 
 ---
 
-## 26. How can you add a new partition for the month **April** in the above partitioned table?
+## Q26. How can you add a new partition for the month **April** in the above partitioned table?
 
 ````markdown
 
@@ -1479,7 +1479,7 @@ Alternatively, we can use **`MSCK REPAIR TABLE`** or **partition discovery**, bu
 
 ---
 
-## 27. What is the default maximum dynamic partition that can be created by a mapper/reducer per node or totally? How can you change it?
+## Q27. What is the default maximum dynamic partition that can be created by a mapper/reducer per node or totally? How can you change it?
 
 By default, the **maximum number of dynamic partitions** that can be created by a **mapper or reducer per node** is **100**, and the **total number** of dynamic partitions that can be created is **1000**.
 
@@ -1498,7 +1498,7 @@ SET hive.exec.max.dynamic.partitions = <value>;
 ---
 
 
-## 28. Daily Incremental Load with Overlapping Weekly Data in Hive
+## Q28. Daily Incremental Load with Overlapping Weekly Data in Hive
 
 You receive **daily data** from a **source system**, but **each file contains one week of data**.
 
@@ -1615,7 +1615,7 @@ BigQuery (ingestion → curated layers)
 
 ---
 
-## 29. When a partition is archived in Hive, it?
+## Q29. When a partition is archived in Hive, it?
 
 **Options:**  
 A. Reduces space through compression  
@@ -1640,7 +1640,7 @@ SELECT * FROM table_name WHERE partition_column='value';
 ---
 
 
-## 30. How do you purge data in a Hive partition table after N days?
+## Q30. How do you purge data in a Hive partition table after N days?
 
 You can configure **automatic partition retention** using the table property:
 
@@ -1653,7 +1653,7 @@ SET TBLPROPERTIES ('partition.retention.period'='7d');
 
 ---
 
-## 31. If the directory for a partition does not exist (no data), but the metastore entry exists, what happens?
+## Q31. If the directory for a partition does not exist (no data), but the metastore entry exists, what happens?
 
 Example:
 
@@ -1679,7 +1679,7 @@ D. No result is returned
 
 ---
 
-## 32. If data exists in HDFS but partition metadata is not added in the metastore, what happens?
+## Q32. If data exists in HDFS but partition metadata is not added in the metastore, what happens?
 
 Example:
 
