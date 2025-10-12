@@ -1618,10 +1618,10 @@ BigQuery (ingestion → curated layers)
 ## 29. When a partition is archived in Hive, it?
 
 **Options:**
-A. Reduces space through compression
-B. Reduces the block size
-C. Reduces the length of records
-D. Reduces the number of files stored ✅
+A. Reduces space through compression  
+B. Reduces the block size  
+C. Reduces the length of records  
+D. Reduces the number of files stored   
 
 **Answer:** **D — Reduces the number of files stored**
 
