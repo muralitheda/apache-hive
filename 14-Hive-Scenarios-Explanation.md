@@ -1743,8 +1743,6 @@ DROP TABLE [IF EXISTS] table_name [PURGE];
 ALTER TABLE old_table_name RENAME TO new_table_name;
 ```
 
----
-
 ### **2. Renaming an External Hive Table**
 
 * **Does the location change automatically?** ❌ **No**
@@ -1754,8 +1752,6 @@ ALTER TABLE old_table_name RENAME TO new_table_name;
 ```markdown
 ALTER TABLE old_external_table_name RENAME TO new_external_table_name;
 ```
-
----
 
 ### **3. Changing a Hive Table Location**
 
