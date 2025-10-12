@@ -1456,10 +1456,10 @@ Batch flowfiles before pushing to HDFS.
 
 ## 25. If we change the partition location of a Hive table using the `ALTER TABLE` command with the **NEW LOCATION** option, then the data for that partition in the table:
 
-**A.** `also moves automatically to the new location` 
+**A.** `also moves automatically to the new location`  
 **B.** has to be dropped and recreated  
-**C.** has to be backed up into a second table and restored  
-**D.** has to be moved manually into the new location
+**C.** has to be backed up into a second table and restored   
+**D.** has to be moved manually into the new location  
 
 ---
 
