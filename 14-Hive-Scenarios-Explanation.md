@@ -1496,3 +1496,124 @@ SET hive.exec.max.dynamic.partitions = <value>;
 ```
 
 ---
+
+
+## 28. Daily Incremental Load with Overlapping Weekly Data in Hive
+
+````markdown
+### 🧩 **Question**
+
+You receive **daily data** from a **source system**, but **each file contains one week of data**.
+
+For example:  
+- On **2 Jan 2022**, the source file contains data from **25 Dec 2021 → 01 Jan 2022**.  
+- On **3 Jan 2022**, the next file contains data from **26 Dec 2021 → 02 Jan 2022**, which overlaps with the previous load.
+
+Your **Hive target table** already contains **3 years of data**, including these dates.  
+The source data may include **updates**, **deletes**, or **new inserts** within this one-week window.
+
+### ❓ **How do you handle this situation?**
+- What type of Hive table should be created?  
+- How should the data be loaded each day?
+
+### ✅ **Answer**
+
+#### **1. Table Design**
+Create a **partitioned external Hive table** based on the transaction date (or load date).  
+Use **ORC/Parquet** format for efficient updates and enable **ACID (transactional)** features if supported.
+
+```sql
+CREATE EXTERNAL TABLE customer_data (
+  customer_id     STRING,
+  name            STRING,
+  amount          DOUBLE,
+  ...
+)
+PARTITIONED BY (txn_date DATE)
+STORED AS ORC
+TBLPROPERTIES (
+  'transactional'='true',
+  'partition.retention.period'='1095d'  -- 3 years retention
+);
+````
+
+#### **2. Loading Logic**
+
+Since each day’s file overlaps with the previous week’s data, you should **overwrite only the affected partitions** (recent 7 days) instead of reloading the entire dataset.
+
+##### **Step 1 – Enable dynamic partitioning**
+
+```sql
+SET hive.exec.dynamic.partition=true;
+SET hive.exec.dynamic.partition.mode=nonstrict;
+```
+
+##### **Step 2 – Overwrite the last 7 days**
+
+When today = **03 Jan 2022**, load data for **26 Dec 2021 → 02 Jan 2022**:
+
+```sql
+INSERT OVERWRITE TABLE customer_data PARTITION (txn_date)
+SELECT * 
+FROM staging_customer
+WHERE txn_date BETWEEN '2021-12-26' AND '2022-01-02';
+```
+
+👉 This overwrites only the last week’s partitions (updates/deletes handled by reloading them).
+
+#### **3. Retention Management**
+
+Automatically purge partitions older than 3 years using table property:
+
+```sql
+ALTER TABLE customer_data 
+SET TBLPROPERTIES ('partition.retention.period'='1095d');
+```
+
+#### **4. Alternative (if ACID Merge is supported)**
+
+If your Hive version supports ACID and MERGE statements, you can perform **record-level upserts** instead of partition-level overwrites:
+
+```sql
+MERGE INTO customer_data AS tgt
+USING staging_customer AS src
+ON tgt.customer_id = src.customer_id AND tgt.txn_date = src.txn_date
+WHEN MATCHED THEN UPDATE SET *
+WHEN NOT MATCHED THEN INSERT *;
+```
+✅ This ensures only changed records are updated.
+
+### 🧠 **What Happens During Each Load**
+
+| Date of Load | Data Range                | Action                                                    |
+| ------------ | ------------------------- | --------------------------------------------------------- |
+| 02 Jan 2022  | 25 Dec 2021 → 01 Jan 2022 | Initial load                                              |
+| 03 Jan 2022  | 26 Dec 2021 → 02 Jan 2022 | Overwrites partitions for 26 Dec → 01 Jan; inserts 02 Jan |
+
+Older data (before 26 Dec 2021) remains **untouched**.
+Partitions older than 3 years are automatically **purged**.
+
+### 🧭 **Data Flow Example**
+
+```
+Source System (daily file)
+   ↓
+GCS (staging zone)
+   ↓
+Hive External Table (partitioned by txn_date)
+   ↓
+BigQuery (ingestion → curated layers)
+```
+
+### 🏁 **Summary**
+
+| Aspect            | Recommendation                                                       |
+| ----------------- | -------------------------------------------------------------------- |
+| Table Type        | External, partitioned by date                                        |
+| Storage Format    | ORC / Parquet                                                        |
+| Write Mode        | INSERT OVERWRITE (for last 7 days) or MERGE (if ACID)                |
+| Dynamic Partition | Enabled                                                              |
+| Retention         | 3 years (`partition.retention.period`)                               |
+| Benefit           | Handles overlapping weekly data efficiently with incremental updates |
+
+```
