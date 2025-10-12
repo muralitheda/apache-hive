@@ -1639,3 +1639,70 @@ SELECT * FROM table_name WHERE partition_column='value';
 
 ---
 
+
+## 30. How do you purge data in a Hive partition table after N days?
+
+You can configure **automatic partition retention** using the table property:
+
+```markdown
+ALTER TABLE customer 
+SET TBLPROPERTIES ('partition.retention.period'='7d');
+```
+
+> This will automatically purge partitions older than **7 days**.
+
+---
+
+## 31. If the directory for a partition does not exist (no data), but the metastore entry exists, what happens?
+
+Example:
+
+```sql
+SELECT * FROM tablename WHERE datadt='2020-08-02';
+```
+
+HDFS location:
+
+```
+/hdfslocation/tablename/datadt=2020-08-01/file.txt (exists)
+```
+
+**Options:**
+A. Error is thrown
+B. MapReduce job is not triggered ✅
+C. Result from a random partition is returned
+D. No result is returned
+
+**Answer:** **B — MapReduce job is not triggered**
+
+> Explanation: Hive checks the metastore for partitions. If the partition exists but contains no data, the query **returns empty results** without triggering a MapReduce job.
+
+---
+
+## 32. If data exists in HDFS but partition metadata is not added in the metastore, what happens?
+
+Example:
+
+```sql
+SELECT * FROM tablename WHERE datadt='2020-08-01';
+```
+
+HDFS location:
+
+```
+/hdfslocation/tablename/datadt=2020-08-01/file.txt (exists)
+```
+
+**Options:**
+A. Result will be returned or error thrown
+B. MapReduce job is not triggered
+C. Result from a random partition is returned
+D. No result is returned ✅
+
+**Answer:** **D — No result is returned**
+
+> Explanation: Hive relies on the **metastore** to know which partitions exist.
+> Even if the files are present in HDFS, **querying without partition metadata returns no results**.
+> Use `MSCK REPAIR TABLE tablename;` or `ALTER TABLE ... ADD PARTITION` to register existing HDFS data with Hive.
+
+---
