@@ -1706,3 +1706,27 @@ D. No result is returned ✅
 > Use `MSCK REPAIR TABLE tablename;` or `ALTER TABLE ... ADD PARTITION` to register existing HDFS data with Hive.
 
 ---
+
+## 33. How to permanently drop data in a Hive table? Why use PURGE?
+
+To permanently delete a Hive table and its data:
+
+```markdown
+DROP TABLE [IF EXISTS] table_name [PURGE];
+```
+
+### **Explanation**
+
+* **Without PURGE**:
+
+  * Table data moves to the **Trash directory**.
+  * Data **can be recovered** if dropped accidentally.
+
+* **With PURGE**:
+
+  * Table data **bypasses Trash** and is **permanently deleted**.
+  * Use **PURGE** when you are **sure you no longer need the data**, or when the table size is too large to retain in Trash.
+
+> ⚠️ **Caution:** Once PURGE is used, data **cannot be recovered**.
+
+---
