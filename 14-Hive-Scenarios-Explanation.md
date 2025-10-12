@@ -1463,3 +1463,18 @@ Batch flowfiles before pushing to HDFS.
 
 ---
 
+````markdown
+## 26. How can you add a new partition for the month **April** in the above partitioned table?
+
+To add a new partition in the table `partitioned_transaction`, use the following command:
+
+```sql
+ALTER TABLE partitioned_transaction 
+ADD PARTITION (month='April') 
+LOCATION '/partitioned_transaction/month=April';
+````
+
+Alternatively, we can use **`MSCK REPAIR TABLE`** or **partition discovery**, but these methods are **not advisable for adding a single partition**.
+
+---
+
