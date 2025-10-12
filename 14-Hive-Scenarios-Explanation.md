@@ -1613,4 +1613,29 @@ BigQuery (ingestion → curated layers)
 | Retention         | 3 years (`partition.retention.period`)                               |
 | Benefit           | Handles overlapping weekly data efficiently with incremental updates |
 
+---
+
+## 29. When a partition is archived in Hive, it?
+
+**Options:**
+A. Reduces space through compression
+B. Reduces the block size
+C. Reduces the length of records
+D. Reduces the number of files stored ✅
+
+**Answer:** **D — Reduces the number of files stored**
+
+**Notes:**
+
+* Archived partitions are stored as **Hadoop Archives (HAR)**.
+* You can **query them normally**.
+* To **modify data**, you must **unarchive** first:
+
+```markdown
+ALTER TABLE table_name ARCHIVE PARTITION (partition_column='value');
+ALTER TABLE table_name UNARCHIVE PARTITION (partition_column='value');
+SELECT * FROM table_name WHERE partition_column='value';
 ```
+
+---
+
