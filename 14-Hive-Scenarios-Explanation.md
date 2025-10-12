@@ -1500,9 +1500,6 @@ SET hive.exec.max.dynamic.partitions = <value>;
 
 ## 28. Daily Incremental Load with Overlapping Weekly Data in Hive
 
-````markdown
-### 🧩 **Question**
-
 You receive **daily data** from a **source system**, but **each file contains one week of data**.
 
 For example:  
