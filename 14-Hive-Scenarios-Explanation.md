@@ -1764,3 +1764,41 @@ ALTER TABLE tblname SET LOCATION "hdfs:/dir1/dir2/dir3";
 
 ---
 
+Here’s a **concise Markdown version** for Hive `explode` and converting array columns to rows:
+
+---
+
+## Q35. How to convert an array column into rows in Hive? What is the use of `explode`?
+
+### **Scenario**
+
+* Assume a table has an **array column** `x`:
+
+```
+x -> Array[a, b, c, d, e]
+```
+
+### **Use of `explode`**
+
+* Converts **array or complex data types** into **separate rows**.
+* Useful for **flattening nested data** for easier querying and analysis.
+
+```markdown
+SELECT explode(x) AS y 
+FROM arrays;
+```
+
+**Result:**
+
+```
+a
+b
+c
+d
+e
+```
+
+> `explode` is commonly used with **arrays, maps, or structs** to transform them into **tabular row format**.
+
+---
+
