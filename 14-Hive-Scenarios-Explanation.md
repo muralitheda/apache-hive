@@ -1707,7 +1707,7 @@ D. No result is returned ✅
 
 ---
 
-## 33. How to permanently drop data in a Hive table? Why use PURGE?
+## Q33. How to permanently drop data in a Hive table? Why use PURGE?
 
 To permanently delete a Hive table and its data:
 
@@ -1730,3 +1730,41 @@ DROP TABLE [IF EXISTS] table_name [PURGE];
 > ⚠️ **Caution:** Once PURGE is used, data **cannot be recovered**.
 
 ---
+
+## Q34. Hive Table Rename and Location
+
+### **1. Renaming a Managed Hive Table**
+
+* **Does the location change automatically?** ✅ **Yes**
+
+  * Only if **no explicit location** was set (default location used).
+
+```markdown
+ALTER TABLE old_table_name RENAME TO new_table_name;
+```
+
+---
+
+### **2. Renaming an External Hive Table**
+
+* **Does the location change automatically?** ❌ **No**
+
+  * External tables **retain their original location**, because Hive does not own the data.
+
+```markdown
+ALTER TABLE old_external_table_name RENAME TO new_external_table_name;
+```
+
+---
+
+### **3. Changing a Hive Table Location**
+
+```markdown
+ALTER TABLE tblname SET LOCATION "hdfs:/dir1/dir2/dir3";
+```
+
+* This works for **both managed and external tables**.
+* Use it to **move data** to a new HDFS directory or to point an external table to a different location.
+
+---
+
