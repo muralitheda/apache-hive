@@ -1479,3 +1479,20 @@ Alternatively, we can use **`MSCK REPAIR TABLE`** or **partition discovery**, bu
 
 ---
 
+## 27. What is the default maximum dynamic partition that can be created by a mapper/reducer per node or totally? How can you change it?
+
+By default, the **maximum number of dynamic partitions** that can be created by a **mapper or reducer per node** is **100**, and the **total number** of dynamic partitions that can be created is **1000**.
+
+We can change these limits using the following commands:
+
+```sql
+SET hive.exec.max.dynamic.partitions.pernode = <value>;
+```
+
+To set the total number of dynamic partitions that can be created by one statement:
+
+```sql
+SET hive.exec.max.dynamic.partitions = <value>;
+```
+
+---
