@@ -1923,11 +1923,18 @@ $ hiveserver2 &
 $ beeline
 ```
 
-3. Connect using JDBC:
+3. Connect using JDBC inside Beeline:
 
 ```sql
 !connect jdbc:hive2://localhost:10000/default
 ```
+
+4. Check how Hive is authenticating
+- SET hive.server2.authentication; 
+- Open hive-site.xml (on the HiveServer2 host) and look for:
+- hive.server2.authentication — common values: KERBEROS, LDAP, NOSASL (or NONE / NONE-like), CUSTOM.
+- hive.server2.authentication.ldap.* — LDAP config.
+- This tells you which system holds user accounts.
 
 * Provide your username and password when prompted.
 
