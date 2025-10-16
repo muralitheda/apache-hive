@@ -2273,3 +2273,128 @@ WHERE sale_id = 1001 AND year = 2025 AND month = 10;
 | Dynamic partitions                 | ✅ Supported with `hive.exec.dynamic.partition.mode=nonstrict` |
 
 ---
+
+
+## Data Load Scenario:
+
+* **Source Data:** Daily extract contains **1 week of data**.
+
+  * Example: On 02-Jan-2022, the source file contains data **from 25-Dec-2021 to 01-Jan-2022**.
+  * On 03-Jan-2022, the source file contains data **from 26-Dec-2021 to 02-Jan-2022**.
+  * Source may have **inserts, updates, and deletes**.
+* **Target Hive Table:** Contains **historical data** (3 years) and should be **updated** with the latest source data.
+
+## 1️⃣ Hive Table Design
+
+* Use a **partitioned table** based on the date column (`data_dt`) for efficient loading and management.
+* Optionally, make it **ACID transactional** if updates/deletes need to be applied **without overwriting all partitions**.
+
+### Example Hive Table (Partitioned)
+
+```sql
+CREATE TABLE sales_history (
+    sale_id BIGINT,
+    product_id INT,
+    customer_id INT,
+    sale_date DATE,
+    amount DOUBLE,
+    quantity INT
+)
+PARTITIONED BY (data_dt DATE)
+STORED AS ORC
+TBLPROPERTIES (
+    'transactional'='true',
+    'orc.compress'='SNAPPY'
+);
+```
+
+* **Partitioning** by `data_dt` allows efficient **INSERT OVERWRITE** per partition instead of rewriting the whole table.
+* **ACID** support allows **UPDATE/DELETE** if needed.
+
+## 2️⃣ Loading Strategy
+
+Since the source data contains overlapping 1-week data:
+
+1. **Identify partitions to refresh**:
+
+   * For 02-Jan-2022 source (25-Dec-2021 → 01-Jan-2022), partitions `2021-12-25` → `2022-01-01` are affected.
+   * For 03-Jan-2022 source (26-Dec-2021 → 02-Jan-2022), partitions `2021-12-26` → `2022-01-02` are affected.
+
+2. **Use INSERT OVERWRITE on affected partitions**:
+
+```sql
+-- Example for 02-Jan-2022 load
+INSERT OVERWRITE TABLE sales_history PARTITION (data_dt)
+SELECT sale_id, product_id, customer_id, sale_date, amount, quantity, data_dt
+FROM sales_source
+WHERE data_dt BETWEEN '2021-12-25' AND '2022-01-01';
+```
+
+* **INSERT OVERWRITE** ensures **updates and deletes** from source are reflected in the target table for those partitions.
+* Other partitions (not in the affected date range) remain unchanged.
+
+3. **Next day load (03-Jan-2022)**:
+
+```sql
+INSERT OVERWRITE TABLE sales_history PARTITION (data_dt)
+SELECT sale_id, product_id, customer_id, sale_date, amount, quantity, data_dt
+FROM sales_source
+WHERE data_dt BETWEEN '2021-12-26' AND '2022-01-02';
+```
+
+* Partitions `2021-12-26` → `2022-01-02` are **refreshed**.
+* **No effect** on partitions before `2021-12-26`.
+
+## 3️⃣ Key Considerations
+
+* **Partitioning**:
+
+  * Always partition on the **date column (`data_dt`)** to efficiently overwrite only affected partitions.
+
+* **Table Type**:
+
+  * **ACID transactional table** if updates and deletes are frequent.
+  * Otherwise, **non-transactional ORC table** is sufficient if source always sends full data per partition.
+
+* **Compaction**:
+
+  * For ACID tables, schedule **minor/major compactions** to merge delta files.
+
+* **Automation**:
+
+  * Maintain a **list of affected partitions** for each daily load.
+  * Script the **INSERT OVERWRITE** statements per partition dynamically.
+
+## 4️⃣ Optional: Using Staging Table
+
+1. Load **daily source data** into a **staging table**:
+
+```sql
+CREATE TABLE sales_stage LIKE sales_history STORED AS ORC;
+```
+
+2. Perform **partition-wise overwrite** from staging to history table:
+
+```sql
+INSERT OVERWRITE TABLE sales_history PARTITION (data_dt)
+SELECT *
+FROM sales_stage
+WHERE data_dt BETWEEN <start_date> AND <end_date>;
+```
+
+* Keeps staging data separate and allows **validation** before updating the main table.
+
+## ✅ Summary
+
+| Requirement                             | Hive Solution                                             |
+| --------------------------------------- | --------------------------------------------------------- |
+| Historical data maintenance             | Partitioned table by `data_dt`                            |
+| Source contains overlapping 1-week data | Refresh only affected partitions using `INSERT OVERWRITE` |
+| Updates / deletes from source           | Use ACID transactional table                              |
+| Large dataset / performance             | ORC storage with compression, partition pruning           |
+| Multiple days / months                  | Automate partition detection and overwrite per partition  |
+
+
+This approach ensures **reinstated weekly data** from the source is correctly reflected in Hive, **without touching unaffected historical partitions**, supporting incremental loads, updates, and deletes efficiently.
+
+---
