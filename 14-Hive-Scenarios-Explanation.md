@@ -2066,3 +2066,218 @@ CROSS JOIN (
 ---
 
 
+## Q39.️⃣ Hive ACID / Transactional Tables
+
+Hive supports **full ACID (Atomicity, Consistency, Isolation, Durability)** operations starting from Hive 0.14, enabling **INSERT, UPDATE, and DELETE** operations on transactional tables.
+
+### Requirements:
+
+1. **Transactional table**: Must be created with `TBLPROPERTIES ('transactional'='true')`.
+2. **ORC file format**: ACID operations require ORC storage.
+3. **Bucketed tables**: Table must be **bucketed** (`CLUSTERED BY`) for UPDATE/DELETE.
+4. **Hive configurations**:
+
+```sql
+SET hive.support.concurrency=true;
+SET hive.enforce.bucketing=true;
+SET hive.exec.dynamic.partition.mode=nonstrict;
+SET hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
+SET hive.compactor.initiator.on=true;
+SET hive.compactor.worker.threads=1;
+```
+
+### Example of a transactional table:
+
+```sql
+CREATE TABLE employees_orc (
+    emp_id INT,
+    name STRING,
+    dept STRING,
+    salary DOUBLE
+)
+CLUSTERED BY (emp_id) INTO 4 BUCKETS
+STORED AS ORC
+TBLPROPERTIES ('transactional'='true');
+```
+
+### DML Operations:
+
+* **INSERT**
+
+```sql
+INSERT INTO employees_orc VALUES (1, 'John', 'IT', 50000);
+```
+
+* **UPDATE**
+
+```sql
+UPDATE employees_orc
+SET salary = 60000
+WHERE emp_id = 1;
+```
+
+* **DELETE**
+
+```sql
+DELETE FROM employees_orc
+WHERE emp_id = 1;
+```
+
+### Compaction
+
+* Hive writes updates/deletes as **delta files**, which can create small files.
+* Compaction merges them:
+
+  * **Minor compaction**: merges delta files within the same base.
+  * **Major compaction**: merges base + delta files into a new base.
+
+Schedule compaction via **cron**, Ambari, or Qubole.
+
+---
+
+## 2️⃣ Insert Overwrite on Partitioned Tables
+
+Hive supports **INSERT OVERWRITE** to update partitioned tables efficiently:
+
+```sql
+INSERT OVERWRITE TABLE sales PARTITION (year=2025, month=10)
+SELECT * FROM sales_staging
+WHERE year = 2025 AND month = 10;
+```
+
+* Replaces the partition data with new results.
+* Works with **dynamic partitions**:
+
+```sql
+SET hive.exec.dynamic.partition.mode=nonstrict;
+
+INSERT OVERWRITE TABLE sales PARTITION (year, month)
+SELECT id, amount, year, month FROM sales_staging;
+```
+
+---
+
+## 3️⃣ Using Storage Handlers (External Tables / NoSQL Integration)
+
+Hive can interact with external storage systems using **storage handlers**. This allows DML operations on tables pointing to **NoSQL or search engines** like HBase, Phoenix, or Elasticsearch.
+
+### Example: Hive → HBase
+
+```sql
+CREATE TABLE hbase_employees (
+  emp_id INT,
+  name STRING,
+  dept STRING
+)
+STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+WITH SERDEPROPERTIES (
+  "hbase.columns.mapping" = ":key,cf:name,cf:dept"
+);
+```
+
+* **Insert / Insert Select**
+
+```sql
+INSERT INTO hbase_employees VALUES (1, 'John', 'IT');
+
+INSERT INTO hbase_employees
+SELECT emp_id, name, dept FROM employees_orc;
+```
+
+* DML is supported if the storage handler implements it.
+* Hive executes **insert-select queries** efficiently to push data into NoSQL tables.
+* Supports **upserts** for some storage handlers (HBase, Phoenix).
+
+---
+
+## 4️⃣ Example: `sales` Table in Hive
+
+### a) Regular Partitioned Table
+
+```sql
+CREATE TABLE sales (
+    sale_id BIGINT,
+    product_id INT,
+    customer_id INT,
+    sale_date DATE,
+    amount DOUBLE,
+    quantity INT
+)
+PARTITIONED BY (year INT, month INT)
+STORED AS ORC
+TBLPROPERTIES (
+    "orc.compress"="SNAPPY"
+);
+```
+
+### b) Transactional / ACID Table
+
+```sql
+CREATE TABLE sales_acid (
+    sale_id BIGINT,
+    product_id INT,
+    customer_id INT,
+    sale_date DATE,
+    amount DOUBLE,
+    quantity INT
+)
+PARTITIONED BY (year INT, month INT)
+CLUSTERED BY (sale_id) INTO 8 BUCKETS
+STORED AS ORC
+TBLPROPERTIES (
+    'transactional'='true',
+    'transactional_properties'='default',
+    'orc.compress'='SNAPPY'
+);
+```
+
+---
+
+## 5️⃣ Example DML on `sales` Table
+
+**Insert into partitioned table**
+
+```sql
+INSERT INTO sales PARTITION (year=2025, month=10)
+VALUES (1001, 101, 201, '2025-10-15', 500.0, 2);
+```
+
+**Insert overwrite a partition**
+
+```sql
+INSERT OVERWRITE TABLE sales PARTITION (year=2025, month=10)
+SELECT sale_id, product_id, customer_id, sale_date, amount, quantity
+FROM sales_staging
+WHERE year = 2025 AND month = 10;
+```
+
+**Update ACID table**
+
+```sql
+UPDATE sales_acid
+SET amount = 800.0
+WHERE sale_id = 1002 AND year = 2025 AND month = 10;
+```
+
+**Delete from ACID table**
+
+```sql
+DELETE FROM sales_acid
+WHERE sale_id = 1001 AND year = 2025 AND month = 10;
+```
+
+---
+
+### ✅ Summary
+
+| Feature                            | Hive Support / Notes                                          |
+| ---------------------------------- | ------------------------------------------------------------- |
+| Transactional / ACID tables        | ✅ Requires ORC, bucketing, transactional=true                 |
+| DML (INSERT/UPDATE/DELETE)         | ✅ On ACID tables                                              |
+| Insert overwrite partition         | ✅ Efficient for ETL updates                                   |
+| External tables / Storage handlers | ✅ Insert-Select supported for HBase, Phoenix, ES              |
+| Compaction                         | ✅ Minor / Major to merge delta files                          |
+| Upserts via Hive                   | ✅ Storage-handler dependent                                   |
+| Dynamic partitions                 | ✅ Supported with `hive.exec.dynamic.partition.mode=nonstrict` |
+
+---
