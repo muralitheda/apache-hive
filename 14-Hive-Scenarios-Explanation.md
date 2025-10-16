@@ -1815,5 +1815,76 @@ D. Zero or more columns for each element for each input array
 
 ✅ **Answer:** B — *Zero or more rows, for each element for each input array*
 
+---
+
+
+## Q37. How to generate surrogate keys / sequence numbers / primary keys / unique values in Hive or Spark Hive?
+
+**1. Using ROW_NUMBER()**
+
+```sql
+SELECT ROW_NUMBER() OVER (ORDER BY name) AS surrogate_key, name, city 
+FROM employees;
 ```
+
+Generates sequential numbers for each row.
+✅ Works in Hive (v2.1+) and Spark SQL.
+
+**2. Using UUID()**
+
+```sql
+SELECT UUID() AS unique_id, name, city 
+FROM employees;
+```
+
+Generates globally unique identifiers.
+✅ Works in Hive 3.0+ and Spark SQL.
+
+
+**3. Using monotonically_increasing_id() (Spark)**
+
+```python
+from pyspark.sql.functions import monotonically_increasing_id
+data = [("John", "Delhi"), ("Mary", "Mumbai"), ("Alex", "Chennai")]
+df = spark.createDataFrame(data, ["name", "city"])
+df.withColumn("surrogate_key", monotonically_increasing_id()).show()
+```
+
+Generates unique values per row (not sequential).
+✅ Spark only.
+
+
+**4. Using Column Concatenation**
+
+```sql
+SELECT CONCAT(city, '_', name) AS unique_key, name, city 
+FROM employees;
+```
+
+Combines columns to form unique composite keys.
+✅ Works in Hive and Spark.
+
+
+**5. Using UDF (Custom Function)**
+
+```python
+from pyspark.sql.functions import udf
+import uuid
+uuid_udf = udf(lambda: str(uuid.uuid4()))
+df.withColumn("unique_id", uuid_udf()).show()
+```
+
+Creates custom unique IDs (UUID or timestamp-based).
+✅ Works in Hive (UDF) and Spark (UDF).
+
+
+**Summary:**
+
+* `ROW_NUMBER()` → Sequential surrogate key
+* `UUID()` → Globally unique value
+* `monotonically_increasing_id()` → Unique, non-sequential ID in Spark
+* `CONCAT()` → Business key based on columns
+* `UDF()` → Custom unique generation logic
+
+---
 
