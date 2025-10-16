@@ -1899,7 +1899,6 @@ Creates custom unique IDs (UUID or timestamp-based).
 
 ## Q38. How can you connect to Hive and how to connect using Beeline?
 
-````markdown
 ### Ways to Connect to Hive
 
 - **Hive CLI** (Thrift protocol)
