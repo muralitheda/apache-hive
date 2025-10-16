@@ -1764,10 +1764,6 @@ ALTER TABLE tblname SET LOCATION "hdfs:/dir1/dir2/dir3";
 
 ---
 
-Here’s a **concise Markdown version** for Hive `explode` and converting array columns to rows:
-
----
-
 ## Q35. How to convert an array column into rows in Hive? What is the use of `explode`?
 
 ### **Scenario**
