@@ -1897,3 +1897,40 @@ Creates custom unique IDs (UUID or timestamp-based).
 
 ---
 
+## Q38. How can you connect to Hive and how to connect using Beeline?
+
+````markdown
+### Ways to Connect to Hive
+
+- **Hive CLI** (Thrift protocol)
+- **Beeline CLI** (username/password, connects to HiveServer2)
+- **Hue** (Web UI)
+- **Ambari Hive View** (Web UI)
+- **SQL tools**: SQuirreL, Toad, DBeaver, DBVisualizer (any JDBC-supportive tool)
+- **Notebooks**: Jupyter, Zeppelin
+- **Spark SQL**: spark.sql() queries
+
+### Connecting with Beeline
+
+1. Ensure HiveServer2 is running:
+```bash
+$ hiveserver2 &
+````
+
+2. Start Beeline:
+
+```bash
+$ beeline
+```
+
+3. Connect using JDBC:
+
+```sql
+!connect jdbc:hive2://localhost:10000/default
+```
+
+* Provide your username and password when prompted.
+
+✅ Now you can run Hive queries through Beeline.
+
+---
