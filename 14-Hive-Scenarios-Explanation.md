@@ -1928,6 +1928,8 @@ $ beeline
 ```sql
 !connect jdbc:hive2://localhost:10000/default
 ```
+- Provide your username and password when prompted.
+✅ Now you can run Hive queries through Beeline.
 
 4. Check how Hive is authenticating
 - SET hive.server2.authentication; 
@@ -1935,9 +1937,5 @@ $ beeline
 - hive.server2.authentication — common values: KERBEROS, LDAP, NOSASL (or NONE / NONE-like), CUSTOM.
 - hive.server2.authentication.ldap.* — LDAP config.
 - This tells you which system holds user accounts.
-
-* Provide your username and password when prompted.
-
-✅ Now you can run Hive queries through Beeline.
 
 ---
