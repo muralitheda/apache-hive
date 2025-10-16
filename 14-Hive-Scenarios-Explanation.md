@@ -1823,8 +1823,8 @@ D. Zero or more columns for each element for each input array
 **1. Using ROW_NUMBER()**
 
 ```sql
-SELECT ROW_NUMBER() OVER (ORDER BY name) AS surrogate_key, name, city 
-FROM employees;
+SELECT ROW_NUMBER() OVER (ORDER BY name) AS surrogate_key, name, amount 
+FROM customer;
 ```
 
 Generates sequential numbers for each row.
@@ -1833,8 +1833,8 @@ Generates sequential numbers for each row.
 **2. Using UUID()**
 
 ```sql
-SELECT UUID() AS unique_id, name, city 
-FROM employees;
+SELECT UUID() AS unique_id, name, amount 
+FROM customer;
 ```
 
 Generates globally unique identifiers.
@@ -1844,7 +1844,10 @@ Generates globally unique identifiers.
 **3. Using monotonically_increasing_id() (Spark)**
 
 ```python
+from pyspark.sql.session import SparkSession
 from pyspark.sql.functions import monotonically_increasing_id
+
+spark = SparkSession.builder.getOrCreate()
 data = [("John", "Delhi"), ("Mary", "Mumbai"), ("Alex", "Chennai")]
 df = spark.createDataFrame(data, ["name", "city"])
 df.withColumn("surrogate_key", monotonically_increasing_id()).show()
@@ -1857,8 +1860,8 @@ Generates unique values per row (not sequential).
 **4. Using Column Concatenation**
 
 ```sql
-SELECT CONCAT(city, '_', name) AS unique_key, name, city 
-FROM employees;
+SELECT CONCAT(id, '_', name) AS unique_key, name, amount 
+FROM customer;
 ```
 
 Combines columns to form unique composite keys.
@@ -1868,8 +1871,14 @@ Combines columns to form unique composite keys.
 **5. Using UDF (Custom Function)**
 
 ```python
+from pyspark.sql.session import SparkSession
 from pyspark.sql.functions import udf
 import uuid
+spark = SparkSession.builder.getOrCreate()
+
+data = [("John", "Delhi"), ("Mary", "Mumbai"), ("Alex", "Chennai")]
+df = spark.createDataFrame(data, ["name", "city"])
+
 uuid_udf = udf(lambda: str(uuid.uuid4()))
 df.withColumn("unique_id", uuid_udf()).show()
 ```
