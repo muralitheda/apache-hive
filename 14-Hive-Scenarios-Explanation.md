@@ -2398,3 +2398,46 @@ WHERE data_dt BETWEEN <start_date> AND <end_date>;
 This approach ensures **reinstated weekly data** from the source is correctly reflected in Hive, **without touching unaffected historical partitions**, supporting incremental loads, updates, and deletes efficiently.
 
 ---
+
+Here’s a **concise version** of the Hive views explanation for interviews:
+
+---
+
+## Q41. Views in Hive
+
+### What is a view?
+
+* A **logical table** storing a **query**, not data.
+* Simplifies queries, enforces **security**, masks sensitive fields, and filters data.
+
+### Example
+
+```sql
+CREATE VIEW emp_view AS
+SELECT empid, empname
+FROM employee
+WHERE empid > 1;
+
+SELECT * FROM emp_view;
+
+DROP VIEW emp_view;
+```
+
+### Key Points
+
+* **Normal view**: No data stored, reflects base table changes automatically.
+* **Materialized view**: Stores data, needs **refresh** to update.
+* Can filter or aggregate to show **different rows/columns** than base table.
+
+### Example of materialized view
+
+```sql
+CREATE MATERIALIZED VIEW stock_prices_mv AS
+SELECT stock_id, price, timestamp
+FROM stock_prices
+WHERE market='NASDAQ';
+```
+
+* Useful for **time-sensitive data** (e.g., stock prices at 9am, 10am, 11am).
+
+✅ **Summary**: Normal views = logical, always in sync; materialized views = stored data, faster queries, refresh required.
