@@ -1897,44 +1897,172 @@ Creates custom unique IDs (UUID or timestamp-based).
 
 ---
 
-## Q38. How can you connect to Hive and how to connect using Beeline?
 
-### Ways to Connect to Hive
+## Q38. Hive Connectivity & Query Comparison Cheat Sheet
+
+### 1️⃣ Hive Connectivity Methods
 
 - **Hive CLI** (Thrift protocol)
-- **Beeline CLI** (username/password, connects to HiveServer2)
+- **Beeline CLI** (connects to HiveServer2, username/password optional if auth=NONE)
 - **Hue** (Web UI)
 - **Ambari Hive View** (Web UI)
-- **SQL tools**: SQuirreL, Toad, DBeaver, DBVisualizer (any JDBC-supportive tool)
+- **SQL tools**: SQuirreL, Toad, DBeaver, DBVisualizer (JDBC)
 - **Notebooks**: Jupyter, Zeppelin
 - **Spark SQL**: spark.sql() queries
 
-### Connecting with Beeline
 
-1. Ensure HiveServer2 is running:
+
+### 2️⃣ Connecting via Beeline
+
+1. Start HiveServer2:
 ```bash
-$ hiveserver2 &
+hiveserver2 &
 ````
 
-2. Start Beeline:
+2. Launch Beeline:
 
 ```bash
-$ beeline
+beeline
 ```
 
-3. Connect using JDBC inside Beeline:
+3. Connect:
 
 ```sql
 !connect jdbc:hive2://localhost:10000/default
-```
-- Provide your username and password when prompted.
-✅ Now you can run Hive queries through Beeline.
+# Press Enter for username and password if auth=NONE
 
-4. Check how Hive is authenticating
-- SET hive.server2.authentication; 
-- Open hive-site.xml (on the HiveServer2 host) and look for:
-- hive.server2.authentication — common values: KERBEROS, LDAP, NOSASL (or NONE / NONE-like), CUSTOM.
-- hive.server2.authentication.ldap.* — LDAP config.
-- This tells you which system holds user accounts.
+--hive
+SET hive.server2.authentication;
+# common values: KERBEROS, LDAP, NOSASL (or NONE / NONE-like), CUSTOM.
+```
+
+### 3️⃣ Spark Connection to Hive
+
+* Using Hive Metastore:
+
+```python
+from pyspark.sql import SparkSession
+
+spark = SparkSession.builder \
+    .appName("SparkHiveExample") \
+    .enableHiveSupport() \
+    .getOrCreate()
+
+df = spark.sql("SELECT * FROM employees")
+df.show()
+```
+
+* Using JDBC (HiveServer2 auth required if LDAP/Kerberos):
+
+```python
+df = spark.read.format("jdbc") \
+    .option("url", "jdbc:hive2://localhost:10000/default") \
+    .option("dbtable", "employees") \
+    .load()
+```
+
+### 4️⃣ MINUS / EXCEPT Alternatives in Hive 2.x
+
+* Hive **does not support MINUS or EXCEPT**.
+* Use:
+
+**LEFT ANTI JOIN**
+
+```sql
+SELECT a.*
+FROM table_a a
+LEFT ANTI JOIN table_b b
+ON a.id = b.id;
+```
+
+**NOT IN**
+
+```sql
+SELECT *
+FROM table_a
+WHERE id NOT IN (SELECT id FROM table_b);
+```
+
+**NOT EXISTS**
+
+```sql
+SELECT *
+FROM table_a a
+WHERE NOT EXISTS (SELECT 1 FROM table_b b WHERE a.id = b.id);
+```
+
+
+### 5️⃣ Intersection / Common Rows
+
+```sql
+SELECT a.*
+FROM table_a a
+JOIN table_b b
+ON a.id = b.id;
+```
+
+### 6️⃣ Union / Merge of Tables
+
+```sql
+SELECT id, name FROM table_a
+UNION        -- removes duplicates
+SELECT id, name FROM table_b;
+```
+
+* Use `UNION ALL` to include duplicates.
+
+### 7️⃣ Full Comparison (Excess + Common)
+
+```sql
+SELECT COALESCE(a.id, b.id) AS id,
+       a.name AS name_a,
+       b.name AS name_b
+FROM table_a a
+FULL OUTER JOIN table_b b
+ON a.id = b.id;
+```
+
+* `name_a IS NULL` → exists only in B
+* `name_b IS NULL` → exists only in A
+* Both not null → common row
+
+
+### 8️⃣ Subqueries in Hive 2.x
+
+* **SELECT clause subqueries are NOT supported**:
+
+```sql
+SELECT customer_num,
+       (SELECT MAX(ship_charge) FROM orders) AS max_ship_chg
+FROM customer;  -- ❌ Fails in Hive 2.x
+```
+
+* **Workaround using FROM / JOIN**:
+
+```sql
+SELECT c.customer_number,
+       t.ship_chg
+FROM customer c
+CROSS JOIN (
+    SELECT MAX(ship_charge) AS ship_chg
+    FROM orders
+) t;
+```
+
+* Supported in **WHERE** and **FROM** clauses only.
+* Cross join creates a cartesian product; costly for large datasets.
+
+### ✅ Summary
+
+| Operation             | Hive 2.x Support | Hive Alternative                     |
+| --------------------- | ---------------- | ------------------------------------ |
+| MINUS / EXCEPT        | ❌                | LEFT ANTI JOIN / NOT EXISTS / NOT IN |
+| INTERSECT             | ❌                | INNER JOIN                           |
+| UNION                 | ✅                | UNION / UNION ALL                    |
+| SELECT subquery       | ❌                | Use JOIN or CROSS JOIN               |
+| WHERE / FROM subquery | ✅                | Supported                            |
+| Full comparison       | ✅                | FULL OUTER JOIN + COALESCE           |
 
 ---
+
+
