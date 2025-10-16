@@ -2066,7 +2066,7 @@ CROSS JOIN (
 ---
 
 
-## Q39.️⃣ Hive ACID / Transactional Tables
+## Q39. Hive ACID / Transactional Tables
 
 Hive supports **full ACID (Atomicity, Consistency, Isolation, Durability)** operations starting from Hive 0.14, enabling **INSERT, UPDATE, and DELETE** operations on transactional tables.
 
