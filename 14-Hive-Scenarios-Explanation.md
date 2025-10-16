@@ -2133,9 +2133,7 @@ WHERE emp_id = 1;
 
 Schedule compaction via **cron**, Ambari, or Qubole.
 
----
-
-## 2️⃣ Insert Overwrite on Partitioned Tables
+## 1️⃣ Insert Overwrite on Partitioned Tables
 
 Hive supports **INSERT OVERWRITE** to update partitioned tables efficiently:
 
@@ -2155,9 +2153,8 @@ INSERT OVERWRITE TABLE sales PARTITION (year, month)
 SELECT id, amount, year, month FROM sales_staging;
 ```
 
----
 
-## 3️⃣ Using Storage Handlers (External Tables / NoSQL Integration)
+## 2️⃣ Using Storage Handlers (External Tables / NoSQL Integration)
 
 Hive can interact with external storage systems using **storage handlers**. This allows DML operations on tables pointing to **NoSQL or search engines** like HBase, Phoenix, or Elasticsearch.
 
@@ -2188,9 +2185,8 @@ SELECT emp_id, name, dept FROM employees_orc;
 * Hive executes **insert-select queries** efficiently to push data into NoSQL tables.
 * Supports **upserts** for some storage handlers (HBase, Phoenix).
 
----
 
-## 4️⃣ Example: `sales` Table in Hive
+## 3️⃣ Example: `sales` Table in Hive
 
 ### a) Regular Partitioned Table
 
@@ -2231,9 +2227,7 @@ TBLPROPERTIES (
 );
 ```
 
----
-
-## 5️⃣ Example DML on `sales` Table
+## 4️⃣ Example DML on `sales` Table
 
 **Insert into partitioned table**
 
@@ -2265,8 +2259,6 @@ WHERE sale_id = 1002 AND year = 2025 AND month = 10;
 DELETE FROM sales_acid
 WHERE sale_id = 1001 AND year = 2025 AND month = 10;
 ```
-
----
 
 ### ✅ Summary
 
