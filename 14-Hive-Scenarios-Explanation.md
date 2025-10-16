@@ -2260,7 +2260,7 @@ DELETE FROM sales_acid
 WHERE sale_id = 1001 AND year = 2025 AND month = 10;
 ```
 
-#### ✅ Summary
+### ✅ Summary
 
 | Feature                            | Hive Support / Notes                                          |
 | ---------------------------------- | ------------------------------------------------------------- |
