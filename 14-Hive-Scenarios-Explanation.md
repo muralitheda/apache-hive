@@ -1798,3 +1798,23 @@ e
 
 ---
 
+**Q36.** Consider the query:
+
+
+```sql
+SELECT explode(city_locality) 
+FROM ALL_LOCALITIES;
+```
+
+where `city_locality` is an **ARRAY** datatype. What does it return?
+
+**Options:**
+A. All the array elements as one row for each input array
+B. Zero or more rows, for each element for each input array
+C. Each of the array elements as one column for each input array
+D. Zero or more columns for each element for each input array
+
+✅ **Answer:** B — *Zero or more rows, for each element for each input array*
+
+```
+
