@@ -1798,8 +1798,7 @@ e
 
 ---
 
-**Q36.** Consider the query:
-
+## Q36. Consider the query:
 
 ```sql
 SELECT explode(city_locality) 
