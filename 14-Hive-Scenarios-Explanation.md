@@ -2133,7 +2133,7 @@ WHERE emp_id = 1;
 
 Schedule compaction via **cron**, Ambari, or Qubole.
 
-## 1️⃣ Insert Overwrite on Partitioned Tables
+### 1️⃣ Insert Overwrite on Partitioned Tables
 
 Hive supports **INSERT OVERWRITE** to update partitioned tables efficiently:
 
@@ -2154,11 +2154,11 @@ SELECT id, amount, year, month FROM sales_staging;
 ```
 
 
-## 2️⃣ Using Storage Handlers (External Tables / NoSQL Integration)
+### 2️⃣ Using Storage Handlers (External Tables / NoSQL Integration)
 
 Hive can interact with external storage systems using **storage handlers**. This allows DML operations on tables pointing to **NoSQL or search engines** like HBase, Phoenix, or Elasticsearch.
 
-### Example: Hive → HBase
+#### Example: Hive → HBase
 
 ```sql
 CREATE TABLE hbase_employees (
@@ -2186,9 +2186,9 @@ SELECT emp_id, name, dept FROM employees_orc;
 * Supports **upserts** for some storage handlers (HBase, Phoenix).
 
 
-## 3️⃣ Example: `sales` Table in Hive
+### 3️⃣ Example: `sales` Table in Hive
 
-### a) Regular Partitioned Table
+#### a) Regular Partitioned Table
 
 ```sql
 CREATE TABLE sales (
@@ -2206,7 +2206,7 @@ TBLPROPERTIES (
 );
 ```
 
-### b) Transactional / ACID Table
+#### b) Transactional / ACID Table
 
 ```sql
 CREATE TABLE sales_acid (
@@ -2227,7 +2227,7 @@ TBLPROPERTIES (
 );
 ```
 
-## 4️⃣ Example DML on `sales` Table
+### 4️⃣ Example DML on `sales` Table
 
 **Insert into partitioned table**
 
@@ -2260,7 +2260,7 @@ DELETE FROM sales_acid
 WHERE sale_id = 1001 AND year = 2025 AND month = 10;
 ```
 
-### ✅ Summary
+#### ✅ Summary
 
 | Feature                            | Hive Support / Notes                                          |
 | ---------------------------------- | ------------------------------------------------------------- |
@@ -2275,7 +2275,7 @@ WHERE sale_id = 1001 AND year = 2025 AND month = 10;
 ---
 
 
-## Data Load Scenario:
+## Q40. Data Load Scenario:
 
 * **Source Data:** Daily extract contains **1 week of data**.
 
@@ -2284,12 +2284,12 @@ WHERE sale_id = 1001 AND year = 2025 AND month = 10;
   * Source may have **inserts, updates, and deletes**.
 * **Target Hive Table:** Contains **historical data** (3 years) and should be **updated** with the latest source data.
 
-## 1️⃣ Hive Table Design
+### 1️⃣ Hive Table Design
 
 * Use a **partitioned table** based on the date column (`data_dt`) for efficient loading and management.
 * Optionally, make it **ACID transactional** if updates/deletes need to be applied **without overwriting all partitions**.
 
-### Example Hive Table (Partitioned)
+#### Example Hive Table (Partitioned)
 
 ```sql
 CREATE TABLE sales_history (
@@ -2311,7 +2311,7 @@ TBLPROPERTIES (
 * **Partitioning** by `data_dt` allows efficient **INSERT OVERWRITE** per partition instead of rewriting the whole table.
 * **ACID** support allows **UPDATE/DELETE** if needed.
 
-## 2️⃣ Loading Strategy
+### 2️⃣ Loading Strategy
 
 Since the source data contains overlapping 1-week data:
 
@@ -2345,7 +2345,7 @@ WHERE data_dt BETWEEN '2021-12-26' AND '2022-01-02';
 * Partitions `2021-12-26` → `2022-01-02` are **refreshed**.
 * **No effect** on partitions before `2021-12-26`.
 
-## 3️⃣ Key Considerations
+### 3️⃣ Key Considerations
 
 * **Partitioning**:
 
@@ -2365,7 +2365,7 @@ WHERE data_dt BETWEEN '2021-12-26' AND '2022-01-02';
   * Maintain a **list of affected partitions** for each daily load.
   * Script the **INSERT OVERWRITE** statements per partition dynamically.
 
-## 4️⃣ Optional: Using Staging Table
+### 4️⃣ Optional: Using Staging Table
 
 1. Load **daily source data** into a **staging table**:
 
@@ -2384,7 +2384,7 @@ WHERE data_dt BETWEEN <start_date> AND <end_date>;
 
 * Keeps staging data separate and allows **validation** before updating the main table.
 
-## ✅ Summary
+### ✅ Summary
 
 | Requirement                             | Hive Solution                                             |
 | --------------------------------------- | --------------------------------------------------------- |
