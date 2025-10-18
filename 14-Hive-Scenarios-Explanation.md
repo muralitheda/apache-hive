@@ -2551,7 +2551,6 @@ Here’s the clear answer 👇
 
 Let’s break it down:
 
----
 
 ### **1️⃣ Hive’s execution still runs on YARN**
 
@@ -2587,7 +2586,6 @@ SELECT * FROM mysql_sales WHERE amount > 1000;
 
 Hive still runs a **distributed job on YARN**.
 
----
 
 ### **2️⃣ But data processing is limited by MySQL’s connector**
 
@@ -2599,8 +2597,6 @@ When you use **JDBC-based storage handlers**:
 
 So while **Hive’s engine uses YARN**, **data I/O performance** is limited by the MySQL connector, not HDFS parallelism.
 
----
-
 ### **3️⃣ Summary**
 
 | Feature         | Using HDFS    | Using MySQL (via JDBC)            |
@@ -2610,14 +2606,12 @@ So while **Hive’s engine uses YARN**, **data I/O performance** is limited by t
 | Fault tolerance | ✅ Full        | ⚠️ Partial (depends on connector) |
 | Best for        | Big Data      | Reference / Lookup data           |
 
----
 
 ✅ **In short:**
 You’ll still get YARN’s **resource management and fault tolerance**, but not the **full parallel read/write benefits** of HDFS-based tables.
 
 Hive-on-MySQL is great for **joining external reference data**, not for **large-scale distributed processing**.
 
----
 
 ## Q46. Is multiline comment supported in Hive script?
 
@@ -2657,7 +2651,6 @@ INSERT INTO employee VALUES (101, 'John', 'HR');
 
 Hive was originally designed for **batch processing**, not row-level transactions.
 
----
 
 ### ✅ **To enable record-level Update/Delete**
 
@@ -2686,7 +2679,6 @@ UPDATE employee_txn SET dept='Finance' WHERE empid=101;
 DELETE FROM employee_txn WHERE empid=102;
 ```
 
----
 
 ✅ **Summary:**
 
