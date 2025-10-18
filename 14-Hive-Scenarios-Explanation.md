@@ -2679,7 +2679,6 @@ UPDATE employee_txn SET dept='Finance' WHERE empid=101;
 DELETE FROM employee_txn WHERE empid=102;
 ```
 
-
 ✅ **Summary:**
 
 | Operation | Default         | With ACID Table |
@@ -2691,3 +2690,28 @@ DELETE FROM employee_txn WHERE empid=102;
 Hive supports full DML only for **ACID-enabled ORC transactional tables**.
 
 ---
+
+## Q48. How to run Hive queries from CLI without entering Hive prompt & pass arguments?**
+
+* Run query directly:
+
+  ```bash
+  hive -e "SELECT * FROM txns WHERE state='California' limit 5 ;"
+  ```
+
+* Pass arguments: [NOT WORKING]
+
+  ```bash
+  hive -hivevar state='California' -e "SELECT * FROM txns WHERE state='${hivevar:state}' limit 5 ;"
+  ```
+
+* Run script file with variable:
+
+  ```bash
+  vi file.hql
+  SELECT * FROM default.txns WHERE state='${hivevar:state}' limit 5;
+  
+  hive -hivevar state='California' -f file.hql
+  ```
+
+✅ Use `-e` for inline queries, `-f` for files, and `--hivevar` to pass parameters.
