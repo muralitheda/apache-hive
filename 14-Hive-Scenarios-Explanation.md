@@ -2814,21 +2814,27 @@ You can extract column names (or table metadata) from Hive and write them to a f
 ### **Example 1: Using `awk`**
 
 ```bash
-hive -S -e "DESCRIBE table_name;" | awk -F" " '{print $1}' > ~/output.txt
+hive -S -e "DESCRIBE default.txns;" | awk -F" " '{print $1}' > ~/output.txt
 ```
 
 **Explanation:**
 
-* `hive -S -e "DESCRIBE table_name;"` → returns the schema of the table.
+* `hive -S -e "DESCRIBE default.txns;"` → returns the schema of the table.
 * `awk -F" " '{print $1}'` → extracts the **first column**, which is the column name.
 * `> ~/output.txt` → writes the column names to a file.
 
 **Output (`~/output.txt`):**
 
 ```
-custid
-name
-age
+txn_id
+txn_date
+cust_id
+amount
+category
+subcategory
+city
+state
+payment_type
 ```
 
 ### **Example 2: Getting data with column headers**
@@ -2836,14 +2842,15 @@ age
 If you want to write **table data with headers** to a CSV file:
 
 ```bash
-hive -S -e "SELECT * FROM hive_table;" | awk 'BEGIN {print "custid,name,age"} {print $1","$2","$3}' > ~/hive_table.csv
+hive -S -e "SELECT txn_id,cust_id,amount FROM default.txns;" | awk 'BEGIN {print "txnid,custid,amount"} {print $1","$3","$4}' > ~/hive_table.csv
 ```
 
 **Output (`hive_table.csv`):**
 
 ```
-custid,name,age
-1,irfan,40
+txnid,custid,amount
+00000000,40.33,
+00000001,198.44,
 ```
 
 ### **Notes**
