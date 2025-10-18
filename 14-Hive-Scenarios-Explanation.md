@@ -2737,3 +2737,22 @@ Hive is **not ideal** for:
 The design of **Hadoop + HDFS** focuses on **high-throughput sequential reads/writes**, not low-latency random access. Hence, Hive is a **read-heavy, append-optimized** system used primarily for **big data analytics**, not as a transactional database.
 
 ---
+
+### **Q50. Challenges faced when migrating data to Hive from RDBMS/DB/DWH**
+
+| **Challenge**                              | **Issue**                                                                                                          | **Mitigation / Notes**                                                                              | **Priority / Impact** |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------- | --------------------- |
+| **Count Mismatch**                         | Differences in row counts due to constraints, column mismatches, or partial failures                               | Pilot/parallel runs, data quality frameworks, reconciliation (`--validate` in Sqoop, Spark scripts) | High                  |
+| **SLA & Latency**                          | High latency on small ad-hoc queries; difficult to meet SLAs                                                       | Use optimized engines (Tez, Impala, Presto, Spark), query optimization                              | High                  |
+| **Data Type & Size Mismatch**              | Hive and RDBMS data types differ                                                                                   | Testing and mapping strategy to handle conversions                                                  | Medium                |
+| **Duplicates**                             | Source data may contain duplicates                                                                                 | Deduplicate using Hive queries or Spark transformations                                             | Medium                |
+| **Performance**                            | Hive performance can be poor for certain workloads                                                                 | Partitioning, bucketing, ORC/Parquet formats, Tez/Spark execution, query tuning                     | High                  |
+| **Cost Management**                        | Large data volumes incur high compute/storage costs                                                                | Optimize ETL pipelines, use compression, archive old data                                           | Medium                |
+| **CDC (Change Data Capture)**              | Need to track inserts/updates/deletes from source systems                                                          | Sqoop (CDC), NiFi (CDC), Spark DeltaLake for incremental loads                                      | High                  |
+| **ACID & DML**                             | Record-level insert/update/delete limited                                                                          | Hive 3+ ACID tables with ORC format and bucketing (still evolving)                                  | Medium                |
+| **SCD (Slowly Changing Dimensions)**       | Applying SCD types is challenging                                                                                  | Use incremental loads, timestamp/versioning logic                                                   | Medium                |
+| **Constraints (PK, FK, NOT NULL, UNIQUE)** | Hive does not enforce constraints physically                                                                       | Constraints are mostly for representation; batch data from DB/DWH is assumed clean                  | Low                   |
+| **Small File Load Issues**                 | Many small files degrade HDFS and query performance                                                                | Compaction (minor/major), Hadoop archive, `INSERT OVERWRITE` with tuned map/reducer sizes           | High                  |
+| **Unsupported Features**                   | Select-clause subqueries, multi-column subqueries, some Python/Java functions, `MINUS`/`EXCEPT`, format mismatches | Workarounds using joins, `LEFT JOIN/NOT EXISTS`, or pre-processing in Spark                         | Medium                |
+
+---
