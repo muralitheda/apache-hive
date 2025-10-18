@@ -2617,6 +2617,8 @@ You’ll still get YARN’s **resource management and fault tolerance**, but not
 
 Hive-on-MySQL is great for **joining external reference data**, not for **large-scale distributed processing**.
 
+---
+
 ## Q46. Is multiline comment supported in Hive script?
 
 ❌ **No**, Hive does **not** support multiline comments.
@@ -2638,3 +2640,62 @@ These work in other languages but **not in Hive**:
 ✅ **Summary:**
 Hive supports only **single-line comments** using `--` or `#`; **multiline comments are not supported.**
 
+---
+
+## Q47. Does Hive support record-level Insert, Update, or Delete?
+
+🧩 **By default:**
+Hive supports **only record-level inserts**, not updates or deletes.
+
+### ✅ **Insert Example**
+
+```sql
+INSERT INTO employee VALUES (101, 'John', 'HR');
+```
+
+### ❌ **Update/Delete — Not supported by default**
+
+Hive was originally designed for **batch processing**, not row-level transactions.
+
+---
+
+### ✅ **To enable record-level Update/Delete**
+
+You must use **ACID (transactional) tables**, which require:
+
+* `transactional = true`
+* **ORC file format**
+* **Bucketing enabled**
+* Hive **2.x or later**
+
+```sql
+CREATE TABLE employee_txn (
+  empid INT,
+  empname STRING,
+  dept STRING
+)
+CLUSTERED BY (empid) INTO 4 BUCKETS
+STORED AS ORC
+TBLPROPERTIES ('transactional'='true');
+```
+
+Then you can do:
+
+```sql
+UPDATE employee_txn SET dept='Finance' WHERE empid=101;
+DELETE FROM employee_txn WHERE empid=102;
+```
+
+---
+
+✅ **Summary:**
+
+| Operation | Default         | With ACID Table |
+| --------- | --------------- | --------------- |
+| INSERT    | ✅ Supported     | ✅ Supported     |
+| UPDATE    | ❌ Not supported | ✅ Supported     |
+| DELETE    | ❌ Not supported | ✅ Supported     |
+
+Hive supports full DML only for **ACID-enabled ORC transactional tables**.
+
+---
