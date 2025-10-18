@@ -2513,3 +2513,28 @@ INTO TABLE sales;
 `LOAD DATA LOCAL INPATH` is the best way to load local files into Hive without manually uploading to HDFS.
 
 ---
+
+## Q44. Does Hive depend only on HDFS as a storage layer?
+
+❌ **No.** While **HDFS** is the **default storage layer**, Hive can work with **multiple storage systems** using **storage handlers**.
+
+### Examples:
+
+* **Cloud storages:** Amazon S3, Google Cloud Storage, Azure Data Lake
+* **Databases / NoSQL:** HBase, Cassandra, Druid, Elasticsearch, BigQuery (BigLake)
+* **Local file systems:** For testing or small-scale setups
+
+### Example:
+
+```sql
+CREATE EXTERNAL TABLE hbase_emp(
+  empid STRING,
+  empname STRING
+)
+STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key,details:name")
+TBLPROPERTIES ("hbase.table.name" = "emp_details");
+```
+
+✅ **Summary:**
+Hive can use **any storage backend** — HDFS is default, but not mandatory.
