@@ -2538,3 +2538,81 @@ TBLPROPERTIES ("hbase.table.name" = "emp_details");
 
 ✅ **Summary:**
 Hive can use **any storage backend** — HDFS is default, but not mandatory.
+
+Excellent question — and very relevant when using **Hive with non-HDFS backends** like **MySQL**.
+
+Here’s the clear answer 👇
+
+---
+
+## Q45. If Hive connects to MySQL, will YARN advantages still apply?
+
+🧩 **Partially yes — but with limitations.**
+
+Let’s break it down:
+
+---
+
+### **1️⃣ Hive’s execution still runs on YARN**
+
+Even if your **data source** is MySQL (or any external DB):
+
+* Hive queries are still **compiled, optimized, and executed** by Hive’s engine (MapReduce, Tez, or Spark).
+* These jobs still **run on YARN**, so you get:
+
+  * **Cluster resource management**
+  * **Parallel execution**
+  * **Fault tolerance**
+
+✅ Example:
+
+```sql
+CREATE EXTERNAL TABLE mysql_sales
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+  "hive.sql.database.type" = "MYSQL",
+  "hive.sql.jdbc.driver" = "com.mysql.jdbc.Driver",
+  "hive.sql.jdbc.url" = "jdbc:mysql://localhost:3306/salesdb",
+  "hive.sql.dbcp.username" = "root",
+  "hive.sql.dbcp.password" = "root",
+  "hive.sql.table" = "sales"
+);
+```
+
+When you run a query like:
+
+```sql
+SELECT * FROM mysql_sales WHERE amount > 1000;
+```
+
+Hive still runs a **distributed job on YARN**.
+
+---
+
+### **2️⃣ But data processing is limited by MySQL’s connector**
+
+When you use **JDBC-based storage handlers**:
+
+* Hive pulls data from MySQL into mappers or Spark executors.
+* Data **may not be fully parallelized** — depends on how the connector splits queries.
+* Heavy queries might overload MySQL, not YARN.
+
+So while **Hive’s engine uses YARN**, **data I/O performance** is limited by the MySQL connector, not HDFS parallelism.
+
+---
+
+### **3️⃣ Summary**
+
+| Feature         | Using HDFS    | Using MySQL (via JDBC)            |
+| --------------- | ------------- | --------------------------------- |
+| Runs on YARN    | ✅ Yes         | ✅ Yes                             |
+| Parallel I/O    | ✅ Distributed | ⚠️ Limited                        |
+| Fault tolerance | ✅ Full        | ⚠️ Partial (depends on connector) |
+| Best for        | Big Data      | Reference / Lookup data           |
+
+---
+
+✅ **In short:**
+You’ll still get YARN’s **resource management and fault tolerance**, but not the **full parallel read/write benefits** of HDFS-based tables.
+
+Hive-on-MySQL is great for **joining external reference data**, not for **large-scale distributed processing**.
