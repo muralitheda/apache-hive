@@ -2616,3 +2616,25 @@ So while **Hive’s engine uses YARN**, **data I/O performance** is limited by t
 You’ll still get YARN’s **resource management and fault tolerance**, but not the **full parallel read/write benefits** of HDFS-based tables.
 
 Hive-on-MySQL is great for **joining external reference data**, not for **large-scale distributed processing**.
+
+## Q46. Is multiline comment supported in Hive script?
+
+❌ **No**, Hive does **not** support multiline comments.
+
+You can only use **single-line comments** in Hive scripts:
+
+```sql
+-- This is a single-line comment
+# This is also a single-line comment
+```
+
+### Examples of multiline comment (not supported in Hive)
+
+These work in other languages but **not in Hive**:
+
+* **Scala / Java:** `/* comment */`
+* **Python:** `''' comment '''` or `""" comment """`
+
+✅ **Summary:**
+Hive supports only **single-line comments** using `--` or `#`; **multiline comments are not supported.**
+
