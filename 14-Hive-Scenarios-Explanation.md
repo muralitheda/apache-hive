@@ -2414,9 +2414,9 @@ Here’s a **concise version** of the Hive views explanation for interviews:
 
 ```sql
 CREATE VIEW emp_view AS
-SELECT empid, empname
-FROM employee
-WHERE empid > 1;
+SELECT name, age
+FROM students
+WHERE age > 1;
 
 SELECT * FROM emp_view;
 
@@ -2432,12 +2432,61 @@ DROP VIEW emp_view;
 ### Example of materialized view
 
 ```sql
+
+CREATE TABLE stock_prices (
+  stock_id STRING,
+  price DOUBLE,
+  market STRING,
+  ts STRING
+) STORED AS ORC;
+
+INSERT INTO stock_prices VALUES
+('AAPL', 178.5, 'NASDAQ', '2025-10-15 09:00:00'),
+('GOOG', 139.2, 'NASDAQ', '2025-10-15 09:00:00'),
+('TCS', 3600.0, 'BSE', '2025-10-15 09:00:00');
+
 CREATE MATERIALIZED VIEW stock_prices_mv AS
-SELECT stock_id, price, timestamp
+SELECT stock_id, price, ts
 FROM stock_prices
 WHERE market='NASDAQ';
+
+SELECT * FROM stock_prices_mv;
+
+INSERT INTO stock_prices VALUES
+('MSFT', 410.8, 'NASDAQ', '2025-10-16 09:00:00'),
+('INFY', 1520.0, 'BSE', '2025-10-16 09:00:00');
+
+SELECT * FROM stock_prices_mv;
+
+# By default, Hive does not auto-refresh materialized views. We must manually trigger it: Version 3.x
+ALTER MATERIALIZED VIEW stock_prices_mv REBUILD;
+
+# Hive version 2.x
+DROP MATERIALIZED VIEW IF EXISTS stock_prices_mv;
+
+CREATE MATERIALIZED VIEW stock_prices_mv AS
+SELECT stock_id, price, ts
+FROM stock_prices
+WHERE market = 'NASDAQ';
+
+
+SELECT * FROM stock_prices_mv;
+
 ```
 
 * Useful for **time-sensitive data** (e.g., stock prices at 9am, 10am, 11am).
 
 ✅ **Summary**: Normal views = logical, always in sync; materialized views = stored data, faster queries, refresh required.
+
+
+## Q42. Will a new column in the base table appear in the view?
+
+* **If created with specific columns:** New columns **won’t appear**.
+* **If created with `SELECT *`:** New columns **will appear automatically**.
+
+**Example:**
+
+```sql
+CREATE VIEW emp_view AS SELECT empid, empname FROM employee;  -- No new cols shown
+CREATE VIEW emp_view_all AS SELECT * FROM employee;           -- New cols visible
+```
