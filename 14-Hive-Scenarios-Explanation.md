@@ -2738,7 +2738,7 @@ The design of **Hadoop + HDFS** focuses on **high-throughput sequential reads/wr
 
 ---
 
-### **Q50. Challenges faced when migrating data to Hive from RDBMS/DB/DWH**
+## **Q50. Challenges faced when migrating data to Hive from RDBMS/DB/DWH**
 
 | **Challenge**                              | **Issue**                                                                                                          | **Mitigation / Notes**                                                                              | **Priority / Impact** |
 | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------- | --------------------- |
