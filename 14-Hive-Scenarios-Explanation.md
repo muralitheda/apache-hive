@@ -2807,3 +2807,51 @@ Hive is **ideal for batch-oriented, large-scale analytical workloads**, making i
 
 ---
 
+## **Q52. How to write the columns of a Hive table to a file**
+
+You can extract column names (or table metadata) from Hive and write them to a file using shell commands like `awk` or `cut`.
+
+### **Example 1: Using `awk`**
+
+```bash
+hive -S -e "DESCRIBE table_name;" | awk -F" " '{print $1}' > ~/output.txt
+```
+
+**Explanation:**
+
+* `hive -S -e "DESCRIBE table_name;"` → returns the schema of the table.
+* `awk -F" " '{print $1}'` → extracts the **first column**, which is the column name.
+* `> ~/output.txt` → writes the column names to a file.
+
+**Output (`~/output.txt`):**
+
+```
+custid
+name
+age
+```
+
+### **Example 2: Getting data with column headers**
+
+If you want to write **table data with headers** to a CSV file:
+
+```bash
+hive -S -e "SELECT * FROM hive_table;" | awk 'BEGIN {print "custid,name,age"} {print $1","$2","$3}' > ~/hive_table.csv
+```
+
+**Output (`hive_table.csv`):**
+
+```
+custid,name,age
+1,irfan,40
+```
+
+### **Notes**
+
+* `-S` in Hive removes extra logging, giving **clean output**.
+* `awk` is used to format or extract the necessary columns.
+* You can also use `sed` or `cut` depending on formatting requirements.
+
+This approach is commonly used for **metadata extraction** or exporting table structure for documentation or downstream scripts.
+
+---
