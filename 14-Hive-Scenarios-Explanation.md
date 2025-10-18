@@ -2862,3 +2862,22 @@ txnid,custid,amount
 This approach is commonly used for **metadata extraction** or exporting table structure for documentation or downstream scripts.
 
 ---
+
+
+## **Q53. Hive SQL Functions*
+
+| S.No | Function                  | Purpose                                                 | Syntax                                                                                       | Example                                                                                                               | Output / Notes                 |
+| ---- | ------------------------- | ------------------------------------------------------- | -------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- | ------------------------------ |
+| 1    | CONCAT                    | Concatenates multiple strings                           | `CONCAT(string1, string2, ..., stringN)`                                                     | `SELECT CONCAT('Hive','-','performs','-','good','-','in','-','Hadoop');`                                              | `Hive-performs-good-in-Hadoop` |
+| 2    | CONCAT_WS                 | Concatenates multiple strings with a common delimiter   | `CONCAT_WS(delimiter, string1, string2, ..., stringN)`                                       | `SELECT CONCAT_WS('-', 'Hive','performs','good','in','Hadoop');`                                                      | `Hive-performs-good-in-Hadoop` |
+| 3    | Custom HDFS file creation | Create HDFS files from Hive table with custom delimiter | `INSERT OVERWRITE DIRECTORY 'path' SELECT CONCAT_WS(delimiter, col1, col2, ...) FROM table;` | `INSERT OVERWRITE DIRECTORY '/user/hduser/hiveoutput/' SELECT CONCAT_WS(',~', col1,col2,col3,col4,col5) FROM table1;` | `1,~irfan,~40`                 |
+| 4    | REPEAT                    | Repeats a string n times                                | `REPEAT(string, n)`                                                                          | `SELECT REPEAT('Hadoop',3);`                                                                                          | `HadoopHadoopHadoop`           |
+| 5    | TRIM                      | Removes leading and trailing spaces                     | `TRIM(string)`                                                                               | `SELECT TRIM('  Hadoop  ');`                                                                                          | `Hadoop`                       |
+| 6    | LTRIM                     | Removes only leading spaces                             | `LTRIM(string)`                                                                              | `SELECT LTRIM('  Hadoop');`                                                                                           | `Hadoop`                       |
+| 7    | RTRIM                     | Removes only trailing spaces                            | `RTRIM(string)`                                                                              | `SELECT RTRIM('Hadoop  ');`                                                                                           | `Hadoop`                       |
+| 8    | REVERSE                   | Reverses the characters of a string                     | `REVERSE(string)`                                                                            | `SELECT REVERSE('Hadoop');`                                                                                           | `poodaH`                       |
+| 9    | LOWER / LCASE             | Converts string to lowercase                            | `LOWER(string)` / `LCASE(string)`                                                            | `SELECT LOWER('Hadoop');`                                                                                             | `hadoop`                       |
+| 10   | UPPER / UCASE             | Converts string to uppercase                            | `UPPER(string)` / `UCASE(string)`                                                            | `SELECT UPPER('Hadoop');`                                                                                             | `HADOOP`                       |
+
+---
+
