@@ -2490,3 +2490,26 @@ SELECT * FROM stock_prices_mv;
 CREATE VIEW emp_view AS SELECT empid, empname FROM employee;  -- No new cols shown
 CREATE VIEW emp_view_all AS SELECT * FROM employee;           -- New cols visible
 ```
+
+---
+
+## Q43. Can we load data into Hive without using HDFS?
+
+✅ **Yes**, by using the `LOCAL` keyword.
+
+```sql
+LOAD DATA LOCAL INPATH '/home/hduser/data/sales.csv'
+INTO TABLE sales;
+```
+
+* Loads data **directly from the local file system**.
+* Hive copies it into the table’s HDFS location automatically.
+
+**Other options:**
+
+* `CREATE TABLE new_tbl AS SELECT * FROM existing_tbl;` → uses HDFS internally.
+
+**Summary:**
+`LOAD DATA LOCAL INPATH` is the best way to load local files into Hive without manually uploading to HDFS.
+
+---
