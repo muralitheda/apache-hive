@@ -2715,3 +2715,25 @@ Hive supports full DML only for **ACID-enabled ORC transactional tables**.
   ```
 
 ✅ Use `-e` for inline queries, `-f` for files, and `--hivevar` to pass parameters.
+
+---
+
+## Q49. What kind of database/data warehouse application is suitable for Hive?
+
+Hive is **not a full-fledged database or data warehouse system** — rather, it serves as a **complementary or supplementary layer** on top of Hadoop for analytical and batch processing workloads.
+
+It is best suited for:
+
+* ✅ **Data warehousing and ETL** — performing large-scale aggregations, joins, and summarizations.
+* ✅ **Batch analytics** — queries over huge, immutable datasets (TB–PB scale).
+* ✅ **Historical trend analysis** — where low-latency isn’t critical.
+
+Hive is **not ideal** for:
+
+* ❌ OLTP (Online Transaction Processing)
+* ❌ Real-time analytics or frequent updates/deletes
+
+**Reason:**
+The design of **Hadoop + HDFS** focuses on **high-throughput sequential reads/writes**, not low-latency random access. Hence, Hive is a **read-heavy, append-optimized** system used primarily for **big data analytics**, not as a transactional database.
+
+---
