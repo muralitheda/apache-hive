@@ -2761,8 +2761,6 @@ The design of **Hadoop + HDFS** focuses on **high-throughput sequential reads/wr
 
 Hive is **designed for analytical workloads** on large-scale data stored in Hadoop. It is **not suitable for OLTP**, but it excels as a data warehouse tool.
 
----
-
 ### **Key Characteristics Making Hive Suitable for DW**
 
 1. **Relatively static or incremental data**
@@ -2787,7 +2785,6 @@ Hive is **designed for analytical workloads** on large-scale data stored in Hado
      * **Query acceleration engines:** Presto, Impala, LLAP
      * **NoSQL integration** for specialized storage and fast lookups
 
----
 
 ### **Why Hive is not for OLTP**
 
@@ -2795,7 +2792,6 @@ Hive is **designed for analytical workloads** on large-scale data stored in Hado
 * It lacks **real-time insert/update/delete capabilities** required for online transaction processing.
 * Hive is closer to **OLAP (Online Analytical Processing)** — optimized for **querying, aggregating, and analyzing large datasets**.
 
----
 
 ### **Use Cases in Data Warehousing**
 
@@ -2806,7 +2802,8 @@ Hive is **designed for analytical workloads** on large-scale data stored in Hado
 | ETL/ELT Pipelines         | Transforming and loading large-scale batch data from RDBMS/NoSQL into Hadoop |
 | Historical Trend Analysis | Analyzing slowly changing dimensions (SCD1, SCD2) or archival data           |
 
----
-
 ✅ **Summary:**
 Hive is **ideal for batch-oriented, large-scale analytical workloads**, making it a strong choice for **data warehouse applications**, but it **cannot replace OLTP systems**.
+
+---
+
