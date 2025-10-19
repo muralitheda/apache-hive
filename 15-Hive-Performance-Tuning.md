@@ -146,7 +146,6 @@ Tune both default and query-specific settings:
 * Use **CBO (Cost-Based Optimizer)**
 * Proper **heap & reducer tuning**
 
-\
 ### **6. Table streaming / stream table concept in joins**
 
 * **Idea:** When joining tables, small tables can be **streamed into memory** (hash table)
