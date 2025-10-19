@@ -664,4 +664,80 @@ Using **Tez** in Hive means faster execution, better resource utilization, and o
 | **Example in Diagram** | Separate steps for `GROUP BY a.x`, writing to HDFS, `GROUP BY b.x`, writing to HDFS, `JOIN (a,b)`, writing to HDFS, and `ORDER BY`. | Integrated steps: `GROUP BY a.x` and `GROUP BY b.x` feed directly into `JOIN (a,b)` and then `ORDER BY` without intermediate HDFS writes. |
 
 ![img.png](images/img.png)
+
 ---
+
+## Q12. When to use which engine in a Hadoop/Hive ecosystem:
+
+| Engine                                   | Typical Use Case                                            | Notes                                                                                                                                                                                 |
+| ---------------------------------------- | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **MapReduce (MR)**                       | Batch ETL/ELT loads where speed isn’t critical              | Works well for large-scale batch processing but high latency; not ideal if SLA/ETA is strict.                                                                                         |
+| **Tez / Spark**                          | In-memory processing for faster batch jobs                  | Optimized for high throughput and low latency; suitable when you need faster SLA/ETA compared with MR. Spark is especially good for complex transformations and iterative processing. |
+| **Impala / Presto / Athena / Hive LLAP** | Ad-hoc or real-time queries by end-users or reporting teams | Optimized for interactive queries with low latency; ideal for BI dashboards, analytics, or dynamic queries. LLAP improves Hive query performance by caching and persistent daemons.   |
+
+**Summary:**
+
+* **MR** → slow batch ETL/ELT
+* **Tez/Spark** → faster batch, in-memory transformations
+* **Impala/Presto/Athena/LLAP** → interactive, ad-hoc, low-latency queries
+
+---
+
+
+## Q13. Order by Behaviors:
+
+| Clause                                            | Reducer Behavior                                | Sorted? | Comment                                       |
+| ------------------------------------------------- | ----------------------------------------------- | ------- | --------------------------------------------- |
+| `SORT BY userid, accesstime`                      | Each reducer sorts its data, overlapping ranges | Partial | Multiple reducers, not globally sorted        |
+| `DISTRIBUTE BY userid`                            | Rows distributed by userid, no sorting          | No      | Avoid if sorting needed                       |
+| `DISTRIBUTE BY userid SORT BY userid, accesstime` | Distributed by userid, sorted within reducers   | Yes     | Good for multi-reducer sorting                |
+| `CLUSTER BY userid, accesstime`                   | Distributed by userid, sorted within reducer    | Yes     | Best choice for distributed sorting and order |
+| `ORDER BY userid, accesstime`                     | Single reducer, globally sorted                 | Yes     | Only for small datasets                       |
+
+---
+
+## Q14. Concise summary of common Hive/Tez settings** with key guidelines:
+
+
+### **1. Hive Map Join Settings**
+
+| Property                                        | Purpose / Guideline                                                 | Default (Ambari) |
+| ----------------------------------------------- | ------------------------------------------------------------------- | ---------------- |
+| `hive.auto.convert.join`                        | Enable automatic map joins for small tables                         | Auto-tuned       |
+| `hive.auto.convert.join.noconditionaltask`      | Allow map join without conditions                                   | Auto-tuned       |
+| `hive.auto.convert.join.noconditionaltask.size` | Max size of small table to load in memory; ~1/3 of `-Xmx` if manual | Auto-tuned       |
+
+> **Note:** Map joins load smaller tables into memory, skipping reducers → much faster for small table joins.
+
+
+### **2. Tez Container Settings**
+
+| Property                  | Guideline                            | Default (Ambari) |
+| ------------------------- | ------------------------------------ | ---------------- |
+| `hive.tez.container.size` | Production: 4–8 GB; Small VM: 1–2 GB | Auto-tuned       |
+| `hive.tez.java.opts`      | JVM heap: 80–90% of container size   | Auto-tuned       |
+
+
+### **3. Tez Grouping Settings**
+
+| Property                   | Guideline                                                    | Default           |
+| -------------------------- | ------------------------------------------------------------ | ----------------- |
+| `tez.grouping.min.size`    | Lower → better latency; Higher → more throughput             | 16 MB (16777216)  |
+| `tez.grouping.max.size`    | Lower → better latency; Higher → more throughput             | 1 GB (1073741824) |
+| `tez.grouping.split-waves` | Higher → launch more containers; Lower → better multitenancy | 1.7               |
+
+### **4. YARN Scheduler**
+
+| Property                               | Guideline                                             | Default    |
+| -------------------------------------- | ----------------------------------------------------- | ---------- |
+| `yarn.scheduler.minimum-allocation-mb` | Minimum memory per container; 1 GB usually sufficient | Auto-tuned |
+
+
+**💡 Quick Tip:**
+
+* Map join → faster when joining small tables.
+* Tez container & grouping → tune for latency vs throughput tradeoff.
+* `hive.tez.java.opts` should not exceed container heap.
+
+---
+
