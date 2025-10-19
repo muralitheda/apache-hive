@@ -640,8 +640,7 @@ set hive.execution.engine=tez;
   * Adapts execution for better parallelism.
   * Avoids unnecessary resource allocation.
 
-
-
+  
 ### **5. Enabling Tez in Hive**
 
 ```sql
@@ -654,6 +653,15 @@ set hive.execution.engine=tez;
 ✅ **Summary:**
 Using **Tez** in Hive means faster execution, better resource utilization, and optimized query DAGs with container reusability and dynamic execution paths.
 
+
+| Feature | Hive-on-MR (MapReduce) | Hive-on-Tez |
+| :--- | :--- | :--- |
+| **Execution Model** | Sequential chain of multiple **MapReduce jobs**. | Single, integrated **Directed Acyclic Graph (DAG)**. |
+| **Intermediate I/O** | Mandatory **writes to HDFS** between every MapReduce job (High Disk I/O). | **Avoids unnecessary writes to HDFS**; data transfer is often in-memory (Low Disk I/O). |
+| **Data Flow** | **Staging/Batch-oriented:** Output of one job must be fully written before the next job starts. | **Pipelined:** Output of one stage is fed directly as input to the next stage. |
+| **Latency** | **High latency** due to sequential execution and disk I/O overhead. | **Low latency** due to streamlined execution and reduced I/O. |
+| **Efficiency** | Lower efficiency, especially for complex queries. | **Much higher efficiency** and faster query execution. |
+| **Example in Diagram** | Separate steps for `GROUP BY a.x`, writing to HDFS, `GROUP BY b.x`, writing to HDFS, `JOIN (a,b)`, writing to HDFS, and `ORDER BY`. | Integrated steps: `GROUP BY a.x` and `GROUP BY b.x` feed directly into `JOIN (a,b)` and then `ORDER BY` without intermediate HDFS writes. |
+
+![img.png](images/img.png)
 ---
-
-
