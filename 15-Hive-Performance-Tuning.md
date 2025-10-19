@@ -267,3 +267,40 @@ DISTRIBUTE BY data_dt;
 Dynamic partition inserts need **controlled parallelism + smart distribution** to avoid small files, OOM, and skew. `DISTRIBUTE BY partition_key` is the key technique for evenly splitting work across reducers.
 
 ---
+
+## Q4.✅ Can we use WITH (CTE) in Hive?
+
+Yes — supported from **Hive 0.13+**.
+CTE = **temporary result set** (like a temp table) available only for that query.
+
+### **Why use it?**
+
+* Reuse same query multiple times (runs once).
+* Cleaner, modular queries.
+* Helpful when migrating from **Teradata/Oracle** temp tables.
+
+### **Example: Customers who played both Games & Puzzles + only Games**
+
+```sql
+WITH 
+T1 AS (SELECT custno, category, product FROM txnrecords WHERE category='Games'),
+T2 AS (SELECT custno, category, product FROM txnrecords WHERE category='Puzzles')
+SELECT t1.*
+FROM T1 
+JOIN T2 
+  ON T1.custno=T2.custno AND T1.product=T2.product
+UNION
+SELECT * FROM T1;
+```
+
+### **CTE vs Inline Subquery**
+
+| Feature     | CTE            | Inline View        |
+| ----------- | -------------- | ------------------ |
+| Reuse       | ✅ Once, reused | ❌ Repeated scans   |
+| Readability | ✅ Clean        | ❌ Nested           |
+| Performance | ✅ Better       | ❌ Costly for reuse |
+
+🟩 **Tip:** Use CTE when the same query logic repeats — it’s like a lightweight temp table.
+
+---
