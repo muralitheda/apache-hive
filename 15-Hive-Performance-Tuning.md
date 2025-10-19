@@ -532,3 +532,70 @@ TBLPROPERTIES ("orc.compress" = "SNAPPY");
 
 ---
 
+Here’s a **clear and short version** for your notes or interview use 👇
+
+---
+
+## Q9.🧠 EXPLAIN / Execution Plan in Hive
+
+**Purpose:**
+The `EXPLAIN` command in Hive displays **how a query will be executed** — showing each stage (parse → optimize → execute) as an **Abstract Syntax Tree (AST)** and **logical/physical plan**.
+
+**Why it’s useful:**
+
+* Helps understand **query flow** (scans, joins, filters, aggregations).
+* Identifies **bottlenecks** or unnecessary MapReduce/Tez stages.
+* Guides performance tuning (e.g., join order, partition pruning).
+
+**Command Example:**
+
+```sql
+EXPLAIN SELECT a.id, b.name
+FROM customers a
+JOIN orders b ON a.id = b.custid;
+```
+
+**Output Includes:**
+
+* **AST (Abstract Syntax Tree)** – Parsed query structure.
+* **Logical Plan** – Optimized relational operations.
+* **Stage Plan** – Map/Reduce or Tez DAG stages.
+* **Operator Tree** – Sequence of operators used (Filter, MapJoin, ReduceSink, etc.).
+
+✅ **Tip:**
+Use `EXPLAIN EXTENDED` or `EXPLAIN FORMATTED` for detailed plans and stats.
+
+
+---
+
+## Q10. 📊 Hive File Format Comparison
+
+| Feature / Aspect                | **TextFile**     | **RCFile**                   | **Avro**                                | **ORC (Optimized Row Columnar)** | **Parquet**                                      |
+| ------------------------------- | ---------------- | ---------------------------- | --------------------------------------- | -------------------------------- | ------------------------------------------------ |
+| **Storage Type**                | Row-based        | Columnar (Row-Column hybrid) | Row-based (binary serialization)        | Columnar                         | Columnar                                         |
+| **Compression Support**         | Gzip, Bzip2      | Gzip                         | Snappy, Deflate, Bzip2                  | Zlib, Snappy, LZO, None          | Snappy, Gzip, LZO                                |
+| **Compression Efficiency**      | ❌ Low            | ⚪ Moderate                   | ⚪ Moderate                              | ✅ High                           | ✅ High                                           |
+| **Read Performance**            | ❌ Slow           | ⚪ Better                     | ⚪ Moderate                              | ✅ Excellent                      | ✅ Excellent                                      |
+| **Write Performance**           | ✅ Fast           | ⚪ Medium                     | ✅ Fast                                  | ⚪ Slightly Slower                | ⚪ Slightly Slower                                |
+| **Schema Evolution Support**    | ❌ No             | ❌ No                         | ✅ Yes                                   | ⚪ Partial                        | ✅ Yes                                            |
+| **Predicate Pushdown**          | ❌ No             | ⚪ Limited                    | ⚪ Limited                               | ✅ Yes                            | ✅ Yes                                            |
+| **Vectorization (Hive)**        | ❌ No             | ❌ No                         | ❌ No                                    | ✅ Yes                            | ❌ (Supported in Spark only)                      |
+| **ACID Transaction Support**    | ❌ No             | ❌ No                         | ⚪ Used for ACID base data serialization | ✅ Yes (Hive ≤ v3.x)              | ❌ No                                             |
+| **Complex / Nested Data Types** | ❌ No             | ⚪ Limited                    | ✅ Yes                                   | ✅ Yes                            | ⚪ Partial (Limited nested struct support)        |
+| **Indexing / Stride Index**     | ❌ No             | ❌ No                         | ❌ No                                    | ✅ Yes                            | ⚪ No explicit index                              |
+| **Splittable**                  | ✅ Yes            | ✅ Yes                        | ✅ Yes                                   | ✅ Yes                            | ✅ Yes                                            |
+| **File Size (vs Text)**         | 100%             | ~85%                         | ~70%                                    | ~25%                             | ~35%                                             |
+| **Best Use Case**               | Simple text data | Transitional columnar format | Schema evolution, interoperability      | High-performance Hive analytics  | Cross-platform analytics (Spark, Presto, Athena) |
+| **Typical Compression Example** | Text + Gzip      | RCFile + Gzip                | Avro + Snappy                           | ORC + Snappy                     | Parquet + Snappy                                 |
+
+
+### ✅ Quick Insights
+
+* **ORC → Best for Hive** → Vectorization, ACID, predicate pushdown, high compression.
+* **Parquet → Best for Multi-engine Analytics** → Efficient for Spark, BigQuery, Athena.
+* **Avro → Best for Data Exchange** → Great schema evolution + good for ingestion pipelines.
+* **RCFile → Legacy format**, replaced by ORC/Parquet.
+* **TextFile → Simple but inefficient**, only for raw or small datasets.
+
+---
+
