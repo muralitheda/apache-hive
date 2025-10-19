@@ -482,7 +482,7 @@ set hive.vectorized.execution.reduce.enabled = true;
 
 ---
 
-## Q8.🚀 How to get better performance in Hive or different serialization and compression techniques used in Hive?
+## Q8. How to get better performance in Hive or different serialization and compression techniques used in Hive?
 
 **1️⃣ Use Efficient File Formats**
 
@@ -536,7 +536,7 @@ Here’s a **clear and short version** for your notes or interview use 👇
 
 ---
 
-## Q9.🧠 EXPLAIN / Execution Plan in Hive
+## Q9. 🧠EXPLAIN / Execution Plan in Hive
 
 **Purpose:**
 The `EXPLAIN` command in Hive displays **how a query will be executed** — showing each stage (parse → optimize → execute) as an **Abstract Syntax Tree (AST)** and **logical/physical plan**.
