@@ -2881,3 +2881,69 @@ This approach is commonly used for **metadata extraction** or exporting table st
 
 ---
 
+Perfect 👍 — here’s a **complete short-note summary** covering **DOUBLE**, **FLOAT**, and **DECIMAL** types in Hive, all in a clear tabular format with examples.
+
+---
+
+### Q54. Numeric Data Types in Hive – DOUBLE, FLOAT & DECIMAL
+
+| **Data Type**         | **Description**                                                                 | **Precision & Range**                                             | **Example / Behavior**                                                                                                       | **Best Practice / Use Case**                                                                                         |
+| --------------------- | ------------------------------------------------------------------------------- | ----------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| **FLOAT**             | Single-precision floating-point number (IEEE 754, 32-bit).                      | ~6–7 significant digits.<br>Range ≈ ±3.4E38                       | `SELECT CAST(123.456789 AS FLOAT);` → `123.45679` (rounds beyond 7 digits).                                                  | Use for **small numeric values** where minor rounding errors are acceptable (e.g., quick calculations, sensor data). |
+| **DOUBLE**            | Double-precision floating-point number (IEEE 754, 64-bit).                      | ~15–17 significant digits.<br>Range ≈ ±2.22E308                   | `3.99893E5` = 3.99893 × 10⁵ = **399893**.<br>`CAST(12345.67890123456 AS DOUBLE)` → accurate.<br>Beyond 17 digits → rounding. | Use for **scientific or analytical data** needing high range but not exact precision.                                |
+| **DECIMAL(p, s)**     | Fixed-point exact numeric type. `p` = total digits, `s` = digits after decimal. | User-defined, e.g. `DECIMAL(20,10)` → 20 total, 10 after decimal. | `1234567890123456789.123456789` stored exactly if within range.                                                              | Use for **exact financial, ID, or measurement data** where precision is critical.                                    |
+| **Storage / Display** | FLOAT and DOUBLE may show scientific notation (E-format).                       | Example: `3.99893E5` = 399893.                                    | CAST to DECIMAL or STRING for readable output.                                                                               | When exporting to RDBMS, always cast to DECIMAL or STRING to avoid misinterpretation.                                |
+| **Performance**       | FLOAT & DOUBLE are faster (binary math).<br>DECIMAL is slower but exact.        |                                                                   |                                                                                                                              | Choose **DOUBLE** for analytics; **DECIMAL** for precision-critical values.                                          |
+
+
+### **🔹 Key Notes**
+
+* **Scientific Notation:**
+  `E` means *“× 10 to the power of”* — e.g. `1.23E3 = 1230`.
+* **Precision Rule:**
+  DOUBLE = ~17 total digits (before + after decimal).
+  FLOAT = ~7 total digits.
+  DECIMAL = user-defined (exact).
+* **Export Tip:**
+  Always cast FLOAT/DOUBLE to `DECIMAL` or `STRING` before exporting to databases:
+
+  ```sql
+  SELECT CAST(double_col AS DECIMAL(20,10)) FROM table_name;
+  ```
+* **Example Hive Values:**
+
+  ```
+  24624.0
+  32556.0
+  3.99893E5
+  4366.0
+  ```
+
+**In summary:**
+
+> * Use **FLOAT** for small approximate numbers.
+> * Use **DOUBLE** for high-range computations (15–17 significant digits).
+> * Use **DECIMAL(p,s)** for exact numeric precision (money, IDs, etc.).
+
+---
+
+### Q55. Integer Numeric Types in Hive – Short Notes
+
+| **Data Type**              | **Description**                                                                                                          | **Storage Size** | **Range**                                               | **Example / Behavior**                                    | **Best Practice / Use Case**                                   |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------ | ---------------- | ------------------------------------------------------- | --------------------------------------------------------- | -------------------------------------------------------------- |
+| **TINYINT**                | 1-byte integer                                                                                                           | 1 byte           | -128 to 127                                             | `SELECT CAST(100 AS TINYINT);` → `100`                    | Use for small numeric values (status flags, tiny counts).      |
+| **SMALLINT**               | 2-byte integer                                                                                                           | 2 bytes          | -32,768 to 32,767                                       | `SELECT CAST(30000 AS SMALLINT);` → `30000`               | Use when TINYINT is too small but INT is overkill.             |
+| **INT**                    | 4-byte standard integer                                                                                                  | 4 bytes          | -2,147,483,648 to 2,147,483,647                         | `SELECT CAST(2000000 AS INT);` → `2000000`                | Most commonly used integer type for general purposes.          |
+| **BIGINT**                 | 8-byte large integer                                                                                                     | 8 bytes          | -9,223,372,036,854,775,808 to 9,223,372,036,854,775,807 | `SELECT CAST(9000000000000 AS BIGINT);` → `9000000000000` | Use for very large numeric values (timestamps, IDs, counters). |
+| **Storage / Performance**  | Smaller types (TINYINT, SMALLINT) use less memory and can be faster.                                                     |                  |                                                         |                                                           | Choose type based on **range needed**; do not over-allocate.   |
+| **Notes / Best Practices** | - Avoid using INT for very large numbers — switch to BIGINT.<br>- Use smallest type that fits your data to save storage. |                  |                                                         |                                                           |                                                                |
+
+
+**🔹 Key Notes**
+
+* Integer types are **exact** — no rounding like FLOAT/DOUBLE.
+* Ideal for **counts, IDs, flags, or discrete values**.
+* Hive automatically promotes smaller types to larger ones during arithmetic operations if needed.
+
+---
+
