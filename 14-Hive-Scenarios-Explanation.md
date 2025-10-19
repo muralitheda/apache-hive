@@ -2988,3 +2988,28 @@ DROP TABLE old_table;
 ```
 
 ✅ Data remains intact because drop external table will not delete the data; only metadata changes. also no duplicate data because it uses a same HDFS location.
+
+
+---
+
+## Q58. Change Column Data Type in Hive
+
+Use the `ALTER TABLE ... CHANGE` command:
+
+```sql
+ALTER TABLE table_name CHANGE column_name column_name new_datatype;
+```
+
+> **Note:** You must repeat the column name even if it doesn’t change.
+
+#### **Example:**
+
+Change the `id` column in `employee` table from `INT` to `BIGINT`:
+
+```sql
+ALTER TABLE employee CHANGE id id BIGINT;
+```
+
+✅ The column type is updated; existing data is preserved.
+
+---
