@@ -3195,3 +3195,53 @@ WHERE dt <> '2025-10-19';
 
 ---
 
+
+## Q65. Check if a Particular Partition Exists
+
+1. **Repair metadata** (optional, ensures Hive knows about all partitions):
+
+```sql
+MSCK REPAIR TABLE table_name;
+```
+
+2. **Check specific partition:**
+
+```sql
+SHOW PARTITIONS table_name PARTITION (partitioned_column='partition_value');
+```
+
+* If the partition exists, it will be listed.
+* If it doesn’t exist, the result is empty.
+
+---
+
+## Q66. Convert NULL to 0 in Hive since there is no IFNULL, ISNULL function available in Hive
+
+Hive does **not support `IFNULL` or `ISNULL`**, but you can use:
+
+1. **`COALESCE` function:**
+
+```sql
+COALESCE(column, CAST(0 AS BIGINT))
+```
+
+* Returns the column value if not NULL; otherwise returns 0.
+
+2. **`NVL` function:**
+
+```sql
+NVL(column, 0)
+```
+
+* Returns the column value if not NULL; otherwise returns the default value (0).
+
+**Example:**
+
+```sql
+SELECT COALESCE(salary, 0) FROM employee;
+SELECT NVL(salary, 0) FROM employee;
+```
+
+✅ Both approaches ensure NULL values are replaced with 0.
+
+---
