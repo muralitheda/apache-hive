@@ -3215,7 +3215,7 @@ SHOW PARTITIONS table_name PARTITION (partitioned_column='partition_value');
 
 ---
 
-## Q66. Convert NULL to 0 in Hive since there is no IFNULL, ISNULL function available in Hive
+## Q66. Convert NULL to 0 in Hive since there is no IFNULL, ISNULL function is not available in Hive
 
 Hive does **not support `IFNULL` or `ISNULL`**, but you can use:
 
