@@ -568,7 +568,7 @@ Use `EXPLAIN EXTENDED` or `EXPLAIN FORMATTED` for detailed plans and stats.
 
 ---
 
-## Q10. 📊 Hive File Format Comparison
+## Q10. Hive File Format Comparison
 
 | Feature / Aspect                | **TextFile**     | **RCFile**                   | **Avro**                                | **ORC (Optimized Row Columnar)** | **Parquet**                                      |
 | ------------------------------- | ---------------- | ---------------------------- | --------------------------------------- | -------------------------------- | ------------------------------------------------ |
