@@ -3013,3 +3013,52 @@ ALTER TABLE employee CHANGE id id BIGINT;
 ✅ The column type is updated; existing data is preserved.
 
 ---
+
+
+## Q59. Changing a column data type in Hive **for Parquet files**, including all three approaches:
+
+### **Changing Column Data Type in Hive (Parquet Format)**
+
+#### **Approach 1: Recommended Hive-only approach**
+
+1. **Create a new table** with the desired column type and key column(s):
+
+```sql
+CREATE TABLE new_table (custid INT, amt_float FLOAT);
+```
+
+2. **Insert data from current table with casting:**
+
+```sql
+INSERT INTO new_table
+SELECT custid, CAST(amt AS FLOAT) FROM current_table;
+```
+
+3. **Change the column type in current table** (optional metadata step if needed).
+4. **Merge back the new column into current table:**
+
+```sql
+INSERT OVERWRITE TABLE current_table
+SELECT ct.custid, ct.name, ct.address, nt.amt_float, ct.city
+FROM current_table ct
+INNER JOIN new_table nt ON ct.custid = nt.custid;
+```
+
+#### **Approach 2: Using Spark (best for large Parquet tables)**
+
+1. Load current table as DataFrame and cache/persist it in Parquet format.
+2. Register DataFrame as a **temp view**.
+3. Use Spark SQL to alter the table or cast columns and overwrite:
+
+```python
+spark.sql("INSERT OVERWRITE TABLE current_table SELECT custid, CAST(amt AS FLOAT) AS amt_float, ... FROM temp_view")
+```
+
+#### **Approach 3: Not recommended for Parquet/ORC**
+
+1. Directly alter column type in current table.
+2. Try `INSERT OVERWRITE` with casting:
+
+⚠️ **Note:** This **won’t work reliably** for Parquet or ORC tables, so avoid this approach.
+
+---
