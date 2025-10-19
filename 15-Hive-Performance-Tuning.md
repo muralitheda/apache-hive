@@ -170,3 +170,100 @@ Tune both default and query-specific settings:
   * **Alternative:** Materialized views or **ORC/Parquet**, which inherently support **column pruning and indexing**.
 
 ---
+
+## Q3. Performance considerations when loading dynamic partitions in Hive, using your example and insights:
+
+### **1. Problem with naive dynamic partition insert**
+
+Example:
+
+```sql
+INSERT INTO TABLE abc PARTITION(data_dt)
+SELECT * FROM src;
+```
+
+* Works for **few partitions**.
+* **Side effects when loading many partitions** (e.g., 1 year = 365 days):
+
+  1. **Huge number of small files** → slows down downstream jobs.
+  2. **Too many mappers/reducers** → high overhead.
+  3. **Out of memory issues** in mappers or reducers (parallel writers).
+  4. **Data skew** → some reducers get more data (hotspot), others are underutilized.
+
+### **2. Recommended approach**
+
+#### **Step 1: Control the number of mappers/reducers**
+
+```sql
+SET mapred.map.tasks=37;
+SET mapred.reduce.tasks=37;
+```
+
+* Ensures **controlled parallelism**, avoids excessive small files and OOM.
+
+#### **Step 2: Distribute data by partition key**
+
+```sql
+INSERT INTO TABLE abc PARTITION(data_dt)
+SELECT * 
+FROM src
+DISTRIBUTE BY data_dt;
+```
+
+* `DISTRIBUTE BY data_dt` ensures:
+
+  * **Reducer writes data for specific partition(s)**.
+  * Mitigates **skewness** by evenly distributing workload.
+  * Equivalent to **hash(data_dt) % num_reducers**.
+
+> Example: If each date has 10 MB, 37 reducers → ~10 dates per reducer.
+
+#### **Step 3: Handle larger datasets (e.g., 10 years)**
+
+* Instead of creating 1 reducer per partition, you can use **fewer reducers**:
+
+  * One reducer may write multiple partitions.
+* This reduces **overhead from too many small files**.
+
+### **3. Common challenges and solutions**
+
+| Challenge                  | Solution                                                           |
+| -------------------------- | ------------------------------------------------------------------ |
+| Huge number of small files | Use controlled reducers + ORC/Parquet for compression              |
+| OOM in mappers/reducers    | Reduce parallelism, use columnar format, increase memory if needed |
+| Data skew / hot partition  | Use `DISTRIBUTE BY partition_key` to evenly spread partitions      |
+| Slow upstream jobs         | Avoid creating hundreds of tiny files per partition                |
+
+### **4. Key Recommendations**
+
+1. Always use **`DISTRIBUTE BY partition_key`** in dynamic partition inserts.
+2. Use **ORC/Parquet** to reduce file size and memory overhead.
+3. Tune **number of mappers and reducers** based on data size.
+4. For very large datasets (years of partitions), **one reducer can write multiple partitions** to avoid excessive small files.
+5. Monitor for **skew** and **OOM issues**, adjust reducer count accordingly.
+6. What changes when you use DISTRIBUTE BY data_dt
+
+  ```sql 
+  INSERT INTO TABLE abc PARTITION(data_dt)
+  SELECT * FROM src
+  DISTRIBUTE BY data_dt;
+  ```
+  * Still creates 365 partitions, but:
+    * Distribution is done on reduce side → each reducer is responsible for writing data for a subset of partitions.
+    * Hive ensures that all rows for the same data_dt go to the same reducer.
+  * This prevents multiple reducers from writing to the same partition simultaneously.
+    So yes, number of partitions = number of unique data_dt values,
+    but number of output files per partition and job overhead are drastically reduced.
+
+| Problem              | Without `DISTRIBUTE BY`                    | With `DISTRIBUTE BY data_dt`              |
+| -------------------- | ------------------------------------------ | ----------------------------------------- |
+| Number of partitions | Same (depends on distinct data_dt)         | Same                                      |
+| Small file count     | Very high (multiple writers per partition) | Controlled (1 reducer writes 1 partition) |
+| Data skew            | Possible (uneven load per reducer)         | Reduced (hash-based distribute)           |
+| OOM errors           | More likely                                | Less likely (controlled reducer count)    |
+
+
+✅ **Summary:**
+Dynamic partition inserts need **controlled parallelism + smart distribution** to avoid small files, OOM, and skew. `DISTRIBUTE BY partition_key` is the key technique for evenly splitting work across reducers.
+
+---
