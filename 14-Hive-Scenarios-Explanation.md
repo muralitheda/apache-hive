@@ -3170,3 +3170,28 @@ CREATE TABLE new_table LIKE existing_table;
 
 ---
 
+
+### Q64. Difference between DROP TABLE and TRUNCATE TABLE
+
+| Feature                     | DROP TABLE                             | TRUNCATE TABLE                                 |
+| --------------------------- | -------------------------------------- | ---------------------------------------------- |
+| **Purpose**                 | Deletes table **metadata and data**    | Deletes **all data** but keeps table structure |
+| **External Table Behavior** | Only metadata is deleted; data remains | **Not supported** on external tables           |
+| **Effect on Data**          | Data removed (for managed tables)      | Data removed, structure remains                |
+| **Use Case**                | Remove table completely                | Empty table but keep schema for reuse          |
+| **Command Example**         | `DROP TABLE my_table;`                 | `TRUNCATE TABLE my_table;`                     |
+| **Partial Data Deletion**   | Not applicable                         | Use `INSERT OVERWRITE` with filter:            |
+
+```sql
+INSERT OVERWRITE TABLE my_table
+SELECT * FROM my_table
+WHERE dt <> '2025-10-19';
+```
+
+**Notes:**
+
+* For **external tables**, `TRUNCATE` won’t work; use `dfs -rm -r /path/to/table/` from Hive shell to remove data manually.
+* `INSERT OVERWRITE` is the standard way to **delete a portion of data** in a non-ORC table.
+
+---
+
