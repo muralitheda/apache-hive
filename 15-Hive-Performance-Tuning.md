@@ -482,3 +482,53 @@ set hive.vectorized.execution.reduce.enabled = true;
 
 ---
 
+## Q8.🚀 How to get better performance in Hive or different serialization and compression techniques used in Hive?
+
+**1️⃣ Use Efficient File Formats**
+
+* Prefer **ORC** or **Parquet** over Text/CSV — they are **columnar formats** that support:
+
+  * Compression
+  * Predicate pushdown
+  * Lazy loading
+  * Built-in indexing
+
+**2️⃣ Use Compression Techniques**
+
+* Reduces storage size and improves I/O performance.
+* Common combinations:
+
+  * `ORC + Snappy` → Best balance (fast read/write) ✅
+  * `ORC + Zlib` → Better compression ratio (slower)
+  * `Parquet + Snappy` → Widely used in Spark + Hive setups
+
+**3️⃣ Example — High-Performance Table Creation**
+
+```sql
+DROP TABLE customers2;
+
+CREATE EXTERNAL TABLE customers2 (
+  userid STRING,
+  name   STRING
+)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+STORED AS ORC
+LOCATION '/user/hduser/custdata2'
+TBLPROPERTIES ("orc.compress" = "SNAPPY");
+```
+
+**4️⃣ Additional Tips**
+
+* Enable **CBO** and **Vectorization** for optimized query execution.
+* Gather **table statistics** using:
+
+  ```sql
+  ANALYZE TABLE customers2 COMPUTE STATISTICS;
+  ```
+* Use **Partitioning** and **Bucketing** for large datasets.
+
+✅ **Result:** Up to **5x–10x faster query performance** compared to Text/CSV tables.
+
+---
+
