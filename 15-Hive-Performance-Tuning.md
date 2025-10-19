@@ -392,3 +392,60 @@ CREATE TABLE new_tbl AS SELECT * FROM old_tbl WHERE 1=2;
 | Copy only schema        | ❌ No        | `LIKE` or `WHERE 1=2`                            |
 
 ---
+
+## 🧠Q6. Hive Performance Tuning – Quick Summary
+
+### 🔹 Query Optimization Techniques
+
+* **Order By, Sort By, Distribute By, Cluster By** — control reducer and data distribution.
+* **Compression** → `set mapred.output.compression=true;`
+* **Indexing, Partitioning, Bucketing** — reduce scan size.
+* **Optimized Joins** → `/* +streamtable(table_name) */`
+* **Parallel Execution** → `set hive.exec.parallel=true;`
+* **Strict Mode** → prevents full table scans, unsafe queries.
+  `set hive.mapred.mode=strict;`
+* **Set Reducers** → `set mapred.reduce.tasks=<num>;`
+* **Speculative Execution** →
+  `set mapred.map.tasks.speculative.execution=true;`
+  `set mapred.reduce.tasks.speculative.execution=true;`
+
+### 🔹 Vectorization
+
+* Processes batches of rows (instead of row-by-row) → speeds up query execution.
+
+```sql
+set hive.vectorized.execution.enabled=true;
+set hive.vectorized.execution.reduce.enabled=true;
+```
+
+### 🔹 CBO (Cost-Based Optimizer)
+
+* Powered by **Apache Calcite** — generates the most efficient query plan.
+* Performs:
+
+  * **JOIN reordering**
+  * **Query rewrite & predicate pushdown**
+  * **JOIN elimination**
+
+#### Enable CBO:
+
+```sql
+set hive.cbo.enable=true;
+set hive.compute.query.using.stats=true;
+set hive.stats.fetch.column.stats=true;
+set hive.stats.fetch.partition.stats=true;
+set hive.stats.autogather=true;
+```
+
+#### Gather Statistics:
+
+```sql
+analyze table tablename compute statistics;
+analyze table tablename compute statistics for columns sender;
+analyze table tablename compute statistics for partition;
+```
+
+✅ **Result:**
+Better join order, fewer reducers, and reduced query runtime.
+
+---
