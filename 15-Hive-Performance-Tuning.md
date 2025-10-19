@@ -393,7 +393,7 @@ CREATE TABLE new_tbl AS SELECT * FROM old_tbl WHERE 1=2;
 
 ---
 
-## 🧠Q6. Hive Performance Tuning – Quick Summary
+## Q6. Hive Performance Tuning – Quick Summary
 
 ### 🔹 Query Optimization Techniques
 
