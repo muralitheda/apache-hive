@@ -3171,7 +3171,7 @@ CREATE TABLE new_table LIKE existing_table;
 ---
 
 
-### Q64. Difference between DROP TABLE and TRUNCATE TABLE
+## Q64. Difference between DROP TABLE and TRUNCATE TABLE
 
 | Feature                     | DROP TABLE                             | TRUNCATE TABLE                                 |
 | --------------------------- | -------------------------------------- | ---------------------------------------------- |
