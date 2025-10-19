@@ -304,3 +304,91 @@ SELECT * FROM T1;
 🟩 **Tip:** Use CTE when the same query logic repeats — it’s like a lightweight temp table.
 
 ---
+
+## Q5. Hive table rename and data movement scenarios👇
+
+### **1. External Table Rename**
+
+* Command:
+
+  ```sql
+  ALTER TABLE old_name RENAME TO new_name;
+  ```
+* ✅ Table renamed
+* ❌ Data **does NOT move** — still stays in old HDFS location
+
+**If you also want to move the data:**
+
+```bash
+hadoop fs -mv -R /path/to/old_dir /path/to/new_dir
+```
+
+Then update table location if needed:
+
+```sql
+ALTER TABLE new_name SET LOCATION 'hdfs:/path/to/new_dir';
+```
+
+### **2. Managed Table Rename**
+
+* Command:
+
+  ```sql
+  ALTER TABLE old_name RENAME TO new_name;
+  ```
+* ✅ Both **table metadata** and **data folder** in HDFS are renamed automatically.
+
+
+### **3. Alternative (If ALTER is slow for large/partitioned tables)**
+
+Use **EXPORT and IMPORT**:
+
+```sql
+EXPORT TABLE old_tbl TO 'hdfs:/tmp/export_path/';
+IMPORT TABLE new_tbl FROM 'hdfs:/tmp/export_path/';
+```
+
+➡ Creates new table with data moved, without manually recreating schema.
+
+
+### **4. Create New Table Pointing to Old Data (Manual Way)**
+
+```sql
+SHOW CREATE TABLE old_tbl;
+CREATE EXTERNAL TABLE new_tbl (...) LOCATION 'hdfs:/path/to/old_data/';
+MSCK REPAIR TABLE new_tbl;
+DROP TABLE old_tbl;
+```
+
+### **5. Copy Data to a New Table (Costly Approach)**
+
+```sql
+CREATE TABLE new_tbl AS SELECT * FROM old_tbl;
+DROP TABLE old_tbl;
+```
+
+* Creates a **new physical copy** of data (uses MapReduce).
+
+
+### **6. Create Empty Table with Same Structure**
+
+```sql
+CREATE TABLE new_tbl LIKE old_tbl;
+-- or
+CREATE TABLE new_tbl AS SELECT * FROM old_tbl WHERE 1=2;
+```
+
+* Structure copied, **no data copied**.
+
+
+✅ **Summary Table**
+
+| Scenario                | Data Moved? | Recommended Action                               |
+| ----------------------- | ----------- | ------------------------------------------------ |
+| Rename External Table   | ❌ No        | Use `hadoop fs -mv` + `ALTER TABLE SET LOCATION` |
+| Rename Managed Table    | ✅ Yes       | Simple `ALTER TABLE RENAME TO`                   |
+| Slow ALTER on big table | ✅ Yes       | Use `EXPORT` / `IMPORT`                          |
+| Copy data               | ✅ Yes       | `CTAS` (costly)                                  |
+| Copy only schema        | ❌ No        | `LIKE` or `WHERE 1=2`                            |
+
+---
