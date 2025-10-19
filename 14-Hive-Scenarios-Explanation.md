@@ -3063,3 +3063,20 @@ spark.sql("INSERT OVERWRITE TABLE current_table SELECT custid, CAST(amt AS FLOAT
 
 ---
 
+## Q60. Difference between `ORDER BY`, `SORT BY`, `DISTRIBUTE BY`, and `CLUSTER BY` in Hive
+
+| Clause            | Number of Reducers | What it Does                                                            | Notes                                                                                                    |
+| ----------------- | ------------------ | ----------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| **ORDER BY**      | 1                  | Sorts **all rows globally**                                             | Guarantees total ordering; can be slow for large datasets because all data goes through a single reducer |
+| **SORT BY**       | Any                | Sorts rows **within each reducer**                                      | Partial ordering if multiple reducers; faster than ORDER BY for large data                               |
+| **DISTRIBUTE BY** | Any                | Determines which reducer each row goes to **based on the column value** | No sorting; just controls data distribution among reducers                                               |
+| **CLUSTER BY**    | Any                | Combination of DISTRIBUTE BY + SORT BY **on the same column**           | Each reducer gets rows for a column value and they are sorted within that reducer                        |
+
+**Key Points:**
+
+* `ORDER BY` → single reducer → total global sort
+* `SORT BY` → multiple reducers → partial sort
+* `DISTRIBUTE BY` → splits data among reducers (no sort)
+* `CLUSTER BY` → distributes & sorts per reducer
+
+---
