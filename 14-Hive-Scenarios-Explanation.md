@@ -3080,3 +3080,23 @@ spark.sql("INSERT OVERWRITE TABLE current_table SELECT custid, CAST(amt AS FLOAT
 * `CLUSTER BY` → distributes & sorts per reducer
 
 ---
+
+## Q61. `RLIKE` vs `LIKE` in Hive:
+
+| Feature                     | RLIKE                                             | LIKE                                              |
+| --------------------------- | ------------------------------------------------- | ------------------------------------------------- |
+| **Purpose**                 | Matches string using **Java regular expressions** | Simple pattern match using `%` and `_` wildcards  |
+| **Wildcard Needed**         | No `%` required                                   | `%` and `_` required                              |
+| **Substring Matching**      | Matches any part of string if regex matches       | Matches based on `%` placement                    |
+| **Handles Spaces**          | Yes, works even with trailing spaces              | No, may need `TRIM`                               |
+| **NULL Behavior**           | Returns `NULL` if input is `NULL`                 | Returns `NULL` if input is `NULL`                 |
+| **Example 1**               | `'Express' RLIKE 'Exp'` → TRUE                    | `'Express' LIKE 'Exp%'` → TRUE                    |
+| **Example 2**               | `'Express' RLIKE '^E.*'` → TRUE                   | `'Express' LIKE 'E%'` → TRUE                      |
+| **Example 3 (with spaces)** | `'Express  ' RLIKE 'Express'` → TRUE              | `'Express  ' LIKE 'Express'` → FALSE (needs TRIM) |
+
+✅ **Takeaway:**
+
+* **RLIKE** → regex-based, flexible, works with spaces, no wildcards needed.
+* **LIKE** → simple wildcard-based, may need TRIM for spaces.
+
+---
