@@ -3100,3 +3100,73 @@ spark.sql("INSERT OVERWRITE TABLE current_table SELECT custid, CAST(amt AS FLOAT
 * **LIKE** → simple wildcard-based, may need TRIM for spaces.
 
 ---
+
+
+## Q62. Check Hive Query Execution Plan
+
+Use the `EXPLAIN` command in Hive:
+
+```sql
+EXPLAIN [EXTENDED|DEPENDENCY|AUTHORIZATION] your_query;
+```
+
+#### **Options:**
+
+1. **`EXPLAIN`** – Shows the **logical and physical execution plan** for the query.
+2. **`EXPLAIN EXTENDED`** – Adds **detailed information** including optimized logical plan and column statistics.
+3. **`EXPLAIN DEPENDENCY`** – Shows **dependencies of the query**, like which tables and columns are used.
+4. **`EXPLAIN AUTHORIZATION`** – Shows **access control checks** Hive will perform for the query.
+
+
+#### **Example:**
+
+```sql
+EXPLAIN SELECT cust_id, SUM(amount) FROM txns GROUP BY cust_id;
+```
+
+* Outputs the **execution steps**, including:
+
+  * MapReduce / Tez / Spark tasks
+  * Joins, aggregations, and scans
+  * Optimizations applied
+
+✅ **Use `EXPLAIN`** to understand how Hive executes a query and to identify performance bottlenecks.
+
+---
+
+
+
+## Q63. Create Table with Same Structure (Without Data)
+
+**Methods to create a table with the same schema as an existing table, without copying data:**
+
+1. **Using `CREATE TABLE AS SELECT` with a false condition:**
+
+```sql
+CREATE TABLE new_table AS
+SELECT * FROM existing_table WHERE 1=2;
+```
+
+* Copies **columns and data types only**, no rows.
+
+2. **Using `SHOW CREATE TABLE`:**
+
+```sql
+SHOW CREATE TABLE existing_table;
+```
+
+* Get the DDL of the existing table.
+* Change the table name to `new_table` and execute.
+
+3. **Using `LIKE` clause (simplest):**
+
+```sql
+CREATE TABLE new_table LIKE existing_table;
+```
+
+* Creates a table **with the same columns and data types**, **without copying data**.
+
+✅ **Recommendation:** Use `CREATE TABLE ... LIKE` for a clean and simple approach.
+
+---
+
