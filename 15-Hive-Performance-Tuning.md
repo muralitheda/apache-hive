@@ -449,3 +449,36 @@ analyze table tablename compute statistics for partition;
 Better join order, fewer reducers, and reduced query runtime.
 
 ---
+
+Perfect — here’s a **short, interview-ready version** of your *Vectorization* explanation 👇
+
+---
+
+## Q7. Vectorization in Hive
+
+**Definition:**
+Vectorization improves query performance by processing a *batch of rows (default 1024)* at once instead of row-by-row.
+
+**How it works:**
+
+* Each column is stored as a **vector (array)** in memory.
+* Operations like **scan, filter, aggregation, joins** are applied on these vectors → fewer function calls and CPU instructions.
+* Reduces overhead from repeated object creation and metadata interpretation.
+
+**When to Use:**
+
+* When queries select **fewer and small-sized columns** (e.g. `VARCHAR(100)`, `DATE`, `FLOAT`).
+* Not ideal for queries involving **large complex types**.
+
+**Settings:**
+
+```sql
+set hive.vectorized.execution.enabled = true;
+set hive.vectorized.execution.map.enabled = true;
+set hive.vectorized.execution.reduce.enabled = true;
+```
+
+✅ **Benefit:** Significant performance gain (2x–10x) for analytic workloads.
+
+---
+
