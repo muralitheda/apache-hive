@@ -599,3 +599,61 @@ Use `EXPLAIN EXTENDED` or `EXPLAIN FORMATTED` for detailed plans and stats.
 
 ---
 
+## Hive Engine -> TEZ
+
+
+### **1. TEZ Engine**
+
+* **Definition:** Tez is an **advanced execution engine** for Hadoop, designed to improve performance over traditional MapReduce for Hive queries.
+* **Purpose:** It optimizes the execution of complex DAGs (Directed Acyclic Graphs) for faster query processing.
+* **How to enable:**
+
+```sql
+set hive.execution.engine=tez;
+```
+
+* **Advantage:** Significantly faster than MapReduce for iterative and multi-stage queries.
+
+### **2. DAG (Directed Acyclic Graph)**
+
+* **Definition:** A DAG is a graph structure that **represents a sequence of operations** where each node is a task, and edges show dependencies.
+* **In Tez:**
+
+  * Hive queries are converted into a DAG of tasks.
+  * Tez executes tasks in parallel wherever possible, respecting dependencies.
+* **Benefit:** Optimizes execution and reduces redundant reads/writes.
+
+### **3. Container Reusability**
+
+* **Definition:** In Tez, containers (YARN-managed resources) can be **reused for multiple tasks**, instead of launching a new container each time.
+* **Benefit:**
+
+  * Reduces overhead of container setup.
+  * Improves performance for small tasks or iterative jobs.
+
+  
+### **4. Dynamic Graphs**
+
+* **Definition:** Tez allows the DAG to **change dynamically during runtime** based on input size or intermediate results.
+* **Advantage:**
+
+  * Adapts execution for better parallelism.
+  * Avoids unnecessary resource allocation.
+
+
+
+### **5. Enabling Tez in Hive**
+
+```sql
+set hive.execution.engine=tez;
+```
+
+* Switches the Hive execution engine from **MapReduce** (default) to **Tez**.
+* After setting, all subsequent Hive queries will use the Tez engine until the session ends or engine is changed.
+
+✅ **Summary:**
+Using **Tez** in Hive means faster execution, better resource utilization, and optimized query DAGs with container reusability and dynamic execution paths.
+
+---
+
+
