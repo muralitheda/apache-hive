@@ -3062,3 +3062,4 @@ spark.sql("INSERT OVERWRITE TABLE current_table SELECT custid, CAST(amt AS FLOAT
 ⚠️ **Note:** This **won’t work reliably** for Parquet or ORC tables, so avoid this approach.
 
 ---
+
