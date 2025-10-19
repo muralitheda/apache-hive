@@ -2966,3 +2966,25 @@ Perfect 👍 — here’s a **complete short-note summary** covering **DOUBLE**,
 3. DECIMAL(p,s) allows exact storage for financial and precise data; the range depends on precision **p** and scale **s**.
 
 ---
+
+## Q57. Rename External Table in Hive (Short Version)
+
+1. **Get table info:**
+
+```sql
+SHOW CREATE TABLE old_table;
+```
+
+2. **Create new table with same schema & location:**
+
+```sql
+CREATE EXTERNAL TABLE new_table (...) LOCATION 'hdfs://old_table_location';
+```
+
+3. **Drop old table:**
+
+```sql
+DROP TABLE old_table;
+```
+
+✅ Data remains intact because drop external table will not delete the data; only metadata changes. also no duplicate data because it uses a same HDFS location.
