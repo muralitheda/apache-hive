@@ -3219,29 +3219,36 @@ SHOW PARTITIONS table_name PARTITION (partitioned_column='partition_value');
 
 Hive does **not support `IFNULL` or `ISNULL`**, but you can use:
 
-1. **`COALESCE` function:**
+| Feature     | COALESCE                                               | NVL                                    |
+| ----------- | ------------------------------------------------------ | -------------------------------------- |
+| **Purpose** | Returns first non-NULL value                           | Returns second value if first is NULL  |
+| **Args**    | 2 or more                                              | 2                                      |
+| **Example** | `COALESCE(bonus, allowance, 0)` → picks first non-NULL | `NVL(bonus, 0)` → replaces NULL with 0 |
+
+**Example Table:**
+
+| emp_id | bonus | allowance |
+| ------ | ----- | --------- |
+| 1      | 100   | NULL      |
+| 2      | NULL  | 50        |
+| 3      | NULL  | NULL      |
+
+* **COALESCE:**
 
 ```sql
-COALESCE(column, CAST(0 AS BIGINT))
+SELECT COALESCE(bonus, allowance, 0) AS total FROM employee;
 ```
 
-* Returns the column value if not NULL; otherwise returns 0.
+**Result:** 100, 50, 0
 
-2. **`NVL` function:**
+* **NVL:**
 
 ```sql
-NVL(column, 0)
+SELECT NVL(bonus, 0) AS bonus_value FROM employee;
 ```
 
-* Returns the column value if not NULL; otherwise returns the default value (0).
+**Result:** 100, 0, 0
 
-**Example:**
-
-```sql
-SELECT COALESCE(salary, 0) FROM employee;
-SELECT NVL(salary, 0) FROM employee;
-```
-
-✅ Both approaches ensure NULL values are replaced with 0.
+✅ **COALESCE** → multiple fallbacks, **NVL** → single NULL replacement.
 
 ---
