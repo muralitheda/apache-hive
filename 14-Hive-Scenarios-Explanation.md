@@ -2947,3 +2947,22 @@ Perfect 👍 — here’s a **complete short-note summary** covering **DOUBLE**,
 
 ---
 
+## Q56. Hive numeric types cheat sheet with formulas, signed/unsigned ranges, and example values for each type:
+
+| Hive Type    | Size     | Formula & Meaning                                                                                                                                    | Signed Range                                            | Unsigned Range                  | Example Values                                              |
+| ------------ | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- | ------------------------------- | ----------------------------------------------------------- |
+| TINYINT      | 1 byte   | Signed: -2^(8-1) to 2^(8-1)-1 → -128 to 127<br>Unsigned: 0 to 2^8-1 → 0 to 255                                                                       | -128 to 127                                             | 0 to 255                        | -100, 0, 50, 127                                            |
+| SMALLINT     | 2 bytes  | Signed: -2^(16-1) to 2^(16-1)-1 → -32,768 to 32,767<br>Unsigned: 0 to 2^16-1 → 0 to 65,535                                                           | -32,768 to 32,767                                       | 0 to 65,535                     | -20,000, 0, 30,000, 32,767                                  |
+| INT          | 4 bytes  | Signed: -2^(32-1) to 2^(32-1)-1 → -2,147,483,648 to 2,147,483,647<br>Unsigned: 0 to 2^32-1 → 0 to 4,294,967,295                                      | -2,147,483,648 to 2,147,483,647                         | 0 to 4,294,967,295              | -1,000,000, 0, 1,500,000, 2,147,483,647                     |
+| BIGINT       | 8 bytes  | Signed: -2^(64-1) to 2^(64-1)-1 → -9,223,372,036,854,775,808 to 9,223,372,036,854,775,807<br>Unsigned: 0 to 2^64-1 → 0 to 18,446,744,073,709,551,615 | -9,223,372,036,854,775,808 to 9,223,372,036,854,775,807 | 0 to 18,446,744,073,709,551,615 | -5,000,000,000, 0, 8,000,000,000, 9,223,372,036,854,775,807 |
+| FLOAT        | 4 bytes  | 32-bit floating-point → approx. ±3.4 × 10^38 (positive: 0 to 3.4 × 10^38)                                                                            | -3.4E38 to 3.4E38                                       | 0 to 3.4E38                     | -3.14, 0.0, 2.718, 3.4E38                                   |
+| DOUBLE       | 8 bytes  | 64-bit floating-point → approx. ±1.7 × 10^308 (positive: 0 to 1.7 × 10^308)                                                                          | -1.7E308 to 1.7E308                                     | 0 to 1.7E308                    | -2.718281828, 0.0, 3.141592653, 1.7E308                     |
+| DECIMAL(p,s) | Variable | Exact decimal, precision p, scale s → max value = 10^(p-s) - 10^-s                                                                                   | depends on p & s                                        | 0 to max based on precision p   | -123.45, 0.0, 678.90                                        |
+
+**Notes:**
+
+1. Unsigned integers exclude negatives and therefore double the positive range.
+2. FLOAT and DOUBLE in Hive are always signed; “unsigned” here means considering only positive values.
+3. DECIMAL(p,s) allows exact storage for financial and precise data; the range depends on precision **p** and scale **s**.
+
+---
