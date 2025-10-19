@@ -599,7 +599,7 @@ Use `EXPLAIN EXTENDED` or `EXPLAIN FORMATTED` for detailed plans and stats.
 
 ---
 
-## Hive Engine -> TEZ
+## Q11. Hive Engine -> TEZ
 
 
 ### **1. TEZ Engine**
