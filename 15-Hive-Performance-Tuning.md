@@ -958,7 +958,7 @@ flowchart TD
 **How:**
 Join is done in Mapper only. The corresponding buckets are joined with each other at the mapper.
 
-```
+```sql
 set hive.enforce.bucketing = true ;
 set hive.enforce.sorting = true;
 
