@@ -813,8 +813,6 @@ It brings the **smaller tables** to the **node where the large table resides** a
 * Greatly improves **performance** when joining a small table with a large one.
 * Ideal for **star schema joins** (dimension–fact model).
 
----
-
 ## 💡 **Example Use Case**
 
 Suppose we have:
@@ -831,16 +829,12 @@ JOIN smalltable
 ON bigtable.a = smalltable.a;
 ```
 
----
-
 ### 🧩 **Hive Behavior**
 
 By default, Hive **streams the right-most table** (`smalltable`) and **buffers other tables** (`bigtable`) before performing a map-side or reduce-side join.
 
 ⚠️ **Problem:**
 If the large table (`bigtable`) is buffered, Hive may run out of memory — causing a `Java Heap Space` exception.
-
----
 
 ## ⚙️ **Hive Parameters for Map Side Join**
 
@@ -853,8 +847,6 @@ SET hive.auto.convert.join.noconditionaltask.size = 10000000; -- 10 MB threshold
 ```
 
 This allows Hive to automatically convert eligible joins into **map joins** when the smaller table fits into the defined size threshold.
-
----
 
 ### 🔍 **Example Query with AUTO MAP JOIN**
 
@@ -929,8 +921,6 @@ The hint `MAPJOIN(cb)` tells Hive to **load `cb` into memory** and perform the j
 | `hive.auto.convert.join.noconditionaltask.size` | Threshold (in bytes) for considering table as small |
 | `hive.ignore.mapjoin.hint`                      | When false, allows use of `MAPJOIN` hint manually   |
 
----
-
 
 ```mermaid
 flowchart TD
@@ -960,3 +950,5 @@ flowchart TD
 
     A4 -.->|"No Shuffle / No Reduce"| B3
 ```
+
+---
