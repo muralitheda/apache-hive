@@ -962,33 +962,40 @@ Join is done in Mapper only. The corresponding buckets are joined with each othe
 set hive.enforce.bucketing = true ;
 set hive.enforce.sorting = true;
 
-create table buckettxnrecsbycatsorted(
-    txnno INT, 
-    txndate STRING, 
-    custno INT, 
-    amount DOUBLE, 
-    product STRING, 
-    city STRING, 
-    state STRING, 
-    spendby STRING
-)
-clustered by (txnno) sorted by (txnno) INTO 10 buckets
+CREATE TABLE `txns_bucketed`(
+  `txn_id` string, 
+  `txn_date` string, 
+  `cust_id` string, 
+  `amount` double, 
+  `category` string, 
+  `subcategory` string, 
+  `city` string, 
+  `state` string, 
+  `payment_type` string
+  )
+clustered by (txn_id) sorted by (txn_id) INTO 10 buckets
 row format delimited 
 fields terminated by ','
 stored as textfile
-location '/user/hduser/hiveexternaldata/buckettxnrecsbycatsorted';
+;
 
-Insert into table buckettxnrecsbycatsorted 
-select txnno, txndate, custno, amount, product, city, state, spendby 
-from txnrecords;
+Insert into table txns_bucketed 
+select txn_id, txn_date, cust_id, amount, category, subcategory, city, state, payment_type
+from txns;
 
 set hive.auto.convert.sortmerge.join = true;
 set hive.optimize.bucketmapjoin = true;
 set hive.optimize.bucketmapjoin.sortedmerge = true;
 
+explain
 select /*+ MAPJOIN(b2) */ b1.* 
-from buckettxnrecsbycatsorted b1, buckettxnrecsbycatsorted b2 
-where b1.txnno = b2.txnno;
+from txns_bucketed b1, txns_bucketed b2 
+where b1.txn_id = b2.txn_id;
+
+explain
+select b1.* 
+from txns_bucketed b1, txns_bucketed b2 
+where b1.txn_id = b2.txn_id;
 ```
 
 **Use Case:**
