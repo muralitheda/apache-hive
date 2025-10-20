@@ -796,7 +796,7 @@ This is the default and most **robust** join strategy, best used when **both tab
 
 ```mermaid
 flowchart TD
-    subgraph "MapSideJoin(Broadcast Join)"
+    subgraph "MapSide/BroadcastJoin"
         A1["Small Table (in-memory broadcast)"]
         A2["Large Table (on HDFS)"]
         A3["Mapper joins data locally"]
