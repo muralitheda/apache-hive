@@ -741,3 +741,52 @@ Using **Tez** in Hive means faster execution, better resource utilization, and o
 
 ---
 
+## Q15. Performance tuning in Hive with different join options:
+
+![img.png](images/img2.png)
+
+Here's a simple explanation of each method with an example:
+
+---
+
+## The Concept: Joining Tables
+
+Imagine you have two datasets:
+
+* **Table A:** A list of **Customer IDs** and their **Names** (e.g., `(101, 'Alice')`, `(102, 'Bob')`).
+* **Table B:** A list of **Customer IDs** and their **Order Totals** (e.g., `(101, $50)`, `(103, $20)`).
+
+A JOIN combines these two tables based on the common **Customer ID** to get a single result, for example: `(101, 'Alice', $50)`.
+
+## 1. Broadcast Hash Join
+
+This method is the fastest when one table is **significantly smaller** than the other and can fit entirely into the memory of every processing node.
+
+* **How it Works:** The system identifies the **smaller table** (let's say Table A) and **broadcasts** (sends a complete copy of) it to *every* node that holds a part of the larger table (Table B). The nodes then perform a simple, local **hash join** without needing to move the larger table's data.
+* **Key Advantage:** Avoids the expensive network shuffling of the large table.
+* **Example:** If Table A (Names) has 10,000 rows, and Table B (Orders) has 1 billion rows, the system will broadcast the small Table A to all nodes. Each node then joins its small chunk of the 1 billion orders locally with the complete list of names.
+
+## 2. Shuffle Hash Join
+
+This method is a good choice when **neither table is small enough** to be broadcast, but one is still **moderably smaller** than the other.
+
+* **How it Works:**
+    1.  **Shuffle Both:** Both tables (A and B) are partitioned (shuffled) across the network using the **join key** (e.g., Customer ID). This ensures that all rows with the *same* join key end up on the *same* processing node.
+    2.  **Hash the Smaller:** On each node, the **smaller** of the two local partitions is used to build an in-memory **hash map**.
+    3.  **Stream the Bigger:** The larger partition is then **streamed** (read row by row) against the hash map to find matches.
+* **Key Advantage:** It's generally faster than a Sort Merge Join if the partitions are small enough to be hashed efficiently.
+* **Example:** Table A and Table B are both large, but Table A is $20\%$ smaller. After shuffling both tables by Customer ID, each node builds a hash map from its smaller Table A chunk and uses that to look up matches in its larger Table B chunk.
+
+## 3. Sort Merge Join
+
+This is the default and most **robust** join strategy, best used when **both tables are very large** and similarly sized, or when the join key has a high number of distinct values.
+
+* **How it Works:**
+    1.  **Shuffle Both:** Both tables (A and B) are shuffled across the network based on the join key, just like in Shuffle Hash Join.
+    2.  **Sort Both:** On each node, the partitions of both tables are **sorted** based on the join key.
+    3.  **Merge:** The sorted partitions are then **merged** by iterating through both lists simultaneously. Since both are sorted, the system can simply walk down both lists, finding matches efficiently.
+* **Key Advantage:** It's very memory efficient because it only needs to keep a small buffer of rows in memory, making it reliable for extremely large datasets that would overwhelm the memory required for hashing.
+* **Example:** Table A (Names) and Table B (Orders) are both 1 billion rows. After shuffling, each node sorts its local chunk of A and its local chunk of B. It then merges the two sorted lists, like merging two halves of a phone book, to find the matching entries.
+
+---
+
