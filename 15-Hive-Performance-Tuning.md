@@ -790,3 +790,35 @@ This is the default and most **robust** join strategy, best used when **both tab
 
 ---
 
+## Q16. Map Side Join (Broadcast Join) - cost efficient join
+
+![img.png](images/img3.png)
+
+```mermaid
+flowchart TD
+    subgraph "Map Side Join (Broadcast Join)"
+        A1["Small Table (in-memory broadcast)"]
+        A2["Large Table (on HDFS)"]
+        A3["Mapper joins data locally"]
+        A4["Final Output"]
+        
+        A1 --> A3
+        A2 --> A3
+        A3 --> A4
+    end
+
+    subgraph "Reduce Side Join (Traditional)"
+        B1["Table 1 (large)"]
+        B2["Table 2 (large)"]
+        B3["Shuffle and Sort"]
+        B4["Reducer performs join"]
+        B5["Final Output"]
+
+        B1 --> B3
+        B2 --> B3
+        B3 --> B4
+        B4 --> B5
+    end
+
+    A4 -.->|"No Shuffle / No Reduce"| B3
+```
