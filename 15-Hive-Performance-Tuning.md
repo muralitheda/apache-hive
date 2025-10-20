@@ -792,16 +792,16 @@ This is the default and most **robust** join strategy, best used when **both tab
 
 ## Q16. Map Side Join (Broadcast Join) - cost efficient join
 
-# 🧠 Hive Optimization — Map Side Join (Broadcast Join)
+### 🧠 Hive Optimization — Map Side Join (Broadcast Join)
 
 ![img.png](images/img3.png)
 
-## 🔍 **Overview**
+### 🔍 **Overview**
 
 **Map Side Join** (also known as **Broadcast Join**) is a **cost-efficient join strategy** in Hive.
 It brings the **smaller tables** to the **node where the large table resides** and performs the **join operation at the mapper stage itself**, avoiding shuffle and reduce phases.
 
-## ⚙️ **How It Works**
+### ⚙️ **How It Works**
 
 * The **smaller table** is **broadcasted** to all mapper nodes.
 * Each mapper loads this small table **into memory** and performs the join locally with the partitioned data of the **larger table**.
@@ -813,7 +813,7 @@ It brings the **smaller tables** to the **node where the large table resides** a
 * Greatly improves **performance** when joining a small table with a large one.
 * Ideal for **star schema joins** (dimension–fact model).
 
-## 💡 **Example Use Case**
+### 💡 **Example Use Case**
 
 Suppose we have:
 
@@ -836,7 +836,7 @@ By default, Hive **streams the right-most table** (`smalltable`) and **buffers o
 ⚠️ **Problem:**
 If the large table (`bigtable`) is buffered, Hive may run out of memory — causing a `Java Heap Space` exception.
 
-## ⚙️ **Hive Parameters for Map Side Join**
+### ⚙️ **Hive Parameters for Map Side Join**
 
 Enable map-side join optimizations with:
 
@@ -862,21 +862,21 @@ WHERE cb.state = 'NY';
 👉 Here, `customerbkp` (the smaller table) is streamed to the mappers where `customer` (the large table) data resides.
 
 
-## ⚖️ **Advantages**
+### ⚖️ **Advantages**
 
 ✅ **Speed:** Avoids expensive shuffle and reduce operations.  
 ✅ **Efficiency:** Useful for small-to-large table joins (dimension ↔ fact).  
 ✅ **Automatic Optimization:** Hive can convert regular joins to map joins automatically.  
 
-## ⚠️ **Limitations (Cons)**
+### ⚠️ **Limitations (Cons)**
 
 ❌ Requires **at least one small table** (must fit into mapper memory).  
 ❌ Does **not support** `RIGHT OUTER JOIN` or `FULL OUTER JOIN`.  
 ❌ If small table size exceeds threshold, Hive reverts to reduce-side join.  
 
-## 🧭 **Tips & Tuning**
+### 🧭 **Tips & Tuning**
 
-### **1. Auto Convert Joins**
+#### **1. Auto Convert Joins**
 
 Let Hive automatically decide when to use map join:
 
@@ -886,7 +886,7 @@ SET hive.auto.convert.join.noconditionaltask = true;
 SET hive.auto.convert.join.noconditionaltask.size = 10000000;
 ```
 
-### **2. Force Map Join with Hint**
+#### **2. Force Map Join with Hint**
 
 When you want to **explicitly force** a map join:
 
@@ -904,7 +904,7 @@ WHERE cb.state = 'NY';
 🧩 **Explanation:**
 The hint `MAPJOIN(cb)` tells Hive to **load `cb` into memory** and perform the join entirely in the mapper phase.
 
-## 🧮 **Performance Comparison**
+### 🧮 **Performance Comparison**
 
 | Join Type        | Data Shuffle | Reduce Stage | Use Case           | Performance |
 | ---------------- | ------------ | ------------ | ------------------ | ----------- |
@@ -912,7 +912,7 @@ The hint `MAPJOIN(cb)` tells Hive to **load `cb` into memory** and perform the j
 | Map Side Join    | ❌ No         | ❌ No         | Small-Large tables | ⚡ Fast      |
 
 
-## 🧰 **Summary**
+### 🧰 **Summary**
 
 | Parameter                                       | Description                                         |
 | ----------------------------------------------- | --------------------------------------------------- |
