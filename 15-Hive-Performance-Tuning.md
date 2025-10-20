@@ -952,3 +952,61 @@ flowchart TD
 ```
 
 ---
+
+## Q17. Sort Merge Bucket (SMB) Map Join or Bucket Join
+
+**How:**
+Join is done in Mapper only. The corresponding buckets are joined with each other at the mapper.
+
+```
+set hive.enforce.bucketing = true ;
+set hive.enforce.sorting = true;
+
+create table buckettxnrecsbycatsorted(
+    txnno INT, 
+    txndate STRING, 
+    custno INT, 
+    amount DOUBLE, 
+    product STRING, 
+    city STRING, 
+    state STRING, 
+    spendby STRING
+)
+clustered by (txnno) sorted by (txnno) INTO 10 buckets
+row format delimited 
+fields terminated by ','
+stored as textfile
+location '/user/hduser/hiveexternaldata/buckettxnrecsbycatsorted';
+
+Insert into table buckettxnrecsbycatsorted 
+select txnno, txndate, custno, amount, product, city, state, spendby 
+from txnrecords;
+
+set hive.auto.convert.sortmerge.join = true;
+set hive.optimize.bucketmapjoin = true;
+set hive.optimize.bucketmapjoin.sortedmerge = true;
+
+select /*+ MAPJOIN(b2) */ b1.* 
+from buckettxnrecsbycatsorted b1, buckettxnrecsbycatsorted b2 
+where b1.txnno = b2.txnno;
+```
+
+**Use Case:**
+When all tables are:
+ere’s the same explanation in a **clear, normal (non-markdown)** format — you can directly use this for your notes:
+
+---
+
+* Large
+* Bucketed using the join columns
+* Sorted using the join columns
+* All tables have the same number or multiples of buckets
+
+**Cons:**
+
+* Tables need to be bucketed in the same way as join columns, so it cannot be used for other types of SQLs.
+* Partitioned tables might slow down performance.
+
+---
+
+
