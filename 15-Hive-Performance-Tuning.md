@@ -864,15 +864,15 @@ WHERE cb.state = 'NY';
 
 ## ⚖️ **Advantages**
 
-✅ **Speed:** Avoids expensive shuffle and reduce operations.
-✅ **Efficiency:** Useful for small-to-large table joins (dimension ↔ fact).
-✅ **Automatic Optimization:** Hive can convert regular joins to map joins automatically.
+✅ **Speed:** Avoids expensive shuffle and reduce operations.  
+✅ **Efficiency:** Useful for small-to-large table joins (dimension ↔ fact).  
+✅ **Automatic Optimization:** Hive can convert regular joins to map joins automatically.  
 
 ## ⚠️ **Limitations (Cons)**
 
-❌ Requires **at least one small table** (must fit into mapper memory).
-❌ Does **not support** `RIGHT OUTER JOIN` or `FULL OUTER JOIN`.
-❌ If small table size exceeds threshold, Hive reverts to reduce-side join.
+❌ Requires **at least one small table** (must fit into mapper memory).  
+❌ Does **not support** `RIGHT OUTER JOIN` or `FULL OUTER JOIN`.  
+❌ If small table size exceeds threshold, Hive reverts to reduce-side join.  
 
 ## 🧭 **Tips & Tuning**
 
