@@ -993,9 +993,7 @@ where b1.txnno = b2.txnno;
 
 **Use Case:**
 When all tables are:
-ere’s the same explanation in a **clear, normal (non-markdown)** format — you can directly use this for your notes:
-
----
+Here’s the same explanation in a **clear, normal (non-markdown)** format — you can directly use this for your notes:
 
 * Large
 * Bucketed using the join columns
