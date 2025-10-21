@@ -993,7 +993,7 @@ EXPLAIN select b1.* from buckettxnrecsbycatsorted b1, buckettxnrecsbycatsorted b
 
 ---
 
-## Q17. Sort Merge Bucket (SMB) Map Join or Bucket Join
+## Q18. Sort Merge Bucket (SMB) Map Join or Bucket Join
 
 **How:**
 Join is done in Mapper only. The corresponding buckets are joined with each other at the mapper.
