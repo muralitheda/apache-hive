@@ -1097,4 +1097,95 @@ Here’s the same explanation in a **clear, normal (non-markdown)** format — y
 
 ---
 
+## Q19. Skewness and the Bottleneck Problem :
 
+**Skewness** is the property of data where the values in a column are not evenly distributed, causing a small number of keys to account for a vast majority of the rows.
+
+### The Problem in ReduceSide Join
+
+1.  **Fact Table Skew:** In your example, $99$ million out of $100$ million records in the **FACT** table share the same join key (`prod_cd = 250`).
+2.  **Shuffle Mechanism:** In a ReduceSide Join (Shuffle Hash Join), the join key is hashed to determine which reducer receives the data.
+3.  **Bottleneck:** All $99$ million rows with `prod_cd = 250` will be shuffled to the **same single reducer**.
+4.  **Observation:** The job quickly completes the processing of the $1$ million non-skewed records (distributed across many reducers) but gets stalled as the single, overloaded reducer attempts to process the $99$ million skewed records. This is the phenomenon of a job appearing to be stuck at **"Reducer X: 577(+1)/578"** for a prolonged period.
+
+### Solution 1: Manual Query Splitting (Filter Skew)
+
+This is a **manual workaround** where the original join query is split into two or more parts, isolating the skewed key(s) from the non-skewed key(s).
+
+#### Strategy
+
+1.  **Isolate Skewed Keys (MapSide Join):**
+
+      * Filter both tables for the highly skewed key (`country='IND'` in your example).
+      * Since the result set for this single key is typically smaller, you can often force a **MapSide Join** on this subset.
+
+2.  **Process Non-Skewed Keys (ReduceSide Join):**
+
+      * Filter both tables for all non-skewed keys (`country<>'IND'`).
+      * Run a standard **ReduceSide Join** on the remaining data, which is now more evenly distributed across reducers.
+
+3.  **Combine Results:**
+
+      * Use a **`UNION ALL`** to combine the results of the two separate join queries.
+
+#### Example Structure (Simplified from your provided queries)
+
+```sql
+SELECT * FROM (
+    -- 1. MapSide Join for the Skewed Key
+    SELECT TBL1.*, TBL2.* FROM (SELECT * FROM tbl1 WHERE country='IND') TBL1
+    INNER JOIN (SELECT * FROM tbl2 WHERE country='IND') TBL2
+)
+UNION ALL
+SELECT * FROM (
+    -- 2. ReduceSide Join for the Non-Skewed Keys
+    SELECT TBL1.*, TBL2.* FROM (SELECT * FROM tbl1 WHERE country<>'IND') TBL1
+    INNER JOIN (SELECT * FROM tbl2 WHERE country<>'IND') TBL2
+);
+```
+
+#### Pros and Cons
+
+| Advantage | Disadvantage |
+| :--- | :--- |
+| **Simple** (if the original query is simple). | **Maintenance Overhead:** The query must be rewritten and maintained in multiple places. |
+| **Direct Control** over which keys are processed how. | **Complexity:** Becomes difficult and error-prone for complex queries. |
+
+### Solution 2: Hive's Automatic Skew Join Optimization ⚙️
+
+This is an **automated, feature-based solution** where Hive's optimizer dynamically detects and handles skewed keys at runtime without requiring any query changes.
+
+#### How it Works (Two-Stage MapReduce Job)
+
+1.  **Detection and Stage 1 (MapReduce):** Hive runs a job to first detect keys that exceed the threshold set by `hive.skewjoin.key`. The skewed key's data is written to a temporary HDFS directory.
+2.  **Stage 2 (Map Join for Skewed Keys):** A follow-up job (MapReduce) is launched specifically for the temporary skewed data. In this stage, the small dimension table is loaded into memory, and the skewed keys from the fact table are processed as a **MapSide Join**.
+      * This effectively breaks the bottleneck by parallelizing the work for the single skewed key across many mappers.
+
+#### Configuration Settings
+
+| Setting | Description |
+| :--- | :--- |
+| `SET hive.optimize.skewjoin=true;` | **Enables** the entire Skew Join optimization framework. |
+| `SET hive.skewjoin.key=500000;` | The threshold for identifying a skewed key. If any join key has **more than 500,000 rows**, it is considered skewed and handled by the separate Map Join. |
+| `SET hive.skewjoin.mapjoin.map.tasks=10000;` | Specifies the desired number of **Mappers** to be used in the follow-up Map Join job for the skewed key. |
+
+#### Pros and Cons
+
+| Advantage | Disadvantage |
+| :--- | :--- |
+| **No Query Change** needed. | **Inconsistent Performance:** Reliability can vary based on data characteristics and cluster load. |
+| Simple configuration change. | **Increased Overhead:** Requires an initial pass (stage 1) to identify and stage the skewed data. |
+
+### Solution 3: Salting (The Best Practice for Skew)
+
+While you noted this will be covered in Spark, **Salting** is the most robust, predictable, and scalable technique to handle skew in any MapReduce or distributed environment.
+
+#### Salting Strategy (General Concept)
+
+1. **Pre-processing:** Instead of relying on a single key, you **"salt"** the skewed key by appending a random integer (e.g., from 1 to $N$).
+      * **Fact Table:** A row with key `250` becomes `250_1`, `250_2`, ..., `250_N`, distributing the $99$ million rows across $N$ new logical keys.
+      * **Dimension Table:** The single row with key `250` is replicated $N$ times to create $N$ rows: `250_1`, `250_2`, ..., `250_N`.
+2. **Join:** The join is performed on the new, composite salted key (e.g., `FACT.salted_key = DIMENSION.salted_key`).
+3. **Result:** The $99$ million records are now evenly spread across $N$ reducers instead of just one, eliminating the bottleneck.
+
+---
