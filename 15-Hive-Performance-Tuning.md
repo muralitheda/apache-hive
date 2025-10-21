@@ -1189,3 +1189,38 @@ While you noted this will be covered in Spark, **Salting** is the most robust, p
 3. **Result:** The $99$ million records are now evenly spread across $N$ reducers instead of just one, eliminating the bottleneck.
 
 ---
+
+## Q20. Apache Hive 3 Enhancements
+
+Hive 3 significantly improved performance, operational simplicity, and multi-tenancy by focusing on LLAP, mature ACID transactions, and modern execution standards.
+
+### 1. Performance and Resource Management
+
+| Feature | Description | Key Benefit |
+| :--- | :--- | :--- |
+| **Workload Management** | Essential for multi-tenant environments, especially with LLAP. It allows creating **resource pools** to allocate resources, improving **parallel query execution** and cluster sharing. | Guaranteed resource isolation and better cluster utilization. |
+| **Hive LLAP (Low-Latency Analytical Processing)** | LLAP leverages long-running daemons with in-memory caching to drastically reduce query latency, making Hive suitable for interactive analytics. | Faster queries and a shift from batch processing to interactive analytics. |
+| **Materialized Views** | Allows **precomputing and caching** complex or repetitive query portions (joins, aggregations) into views. The optimizer automatically uses this cache. | Greatly increases the speed of **BI and dashboard queries** by avoiding redundant computation. |
+| **Cost-Based Optimizer (CBO)** | Enhanced CBO allows Hive to intelligently **push down** filtering, sorting, and joining operations to the underlying database (e.g., in the case of MySQL table joins). | More efficient query plans and faster execution, especially with external data sources. |
+
+### 2. Transaction Processing and Usability
+
+| Feature | Description | Key Benefit |
+| :--- | :--- | :--- |
+| **Mature ACID Transactions** | Hive 3 includes mature, simplified versions of ACID (Atomicity, Consistency, Isolation, Durability) guarantees. | Simplifies application development and operations with strong transactional guarantees. |
+| **Easier ACID Maintenance** | **Bucketing is no longer required** for ACID tables. Additionally, ACID tables **don't require the ORC format** (though it is still recommended for performance). | Reduced operational complexity and easier table maintenance. |
+
+
+### 3. Deprecated and Replaced Components
+
+Hive 3 aligns with modern Hadoop ecosystem standards by retiring older, less efficient interfaces and execution engines.
+
+| Old Component (Deprecated/Removed) | New Component (Replacement/Standard) |
+| :--- | :--- |
+| **Hive CLI** | **Beeline** (JDBC client) |
+| **MapReduce** execution engine | **Tez** execution engine (The modern standard for Hive) |
+| **WebHCat** | N/A (Web interfaces now typically handled by tools like Ambari or other notebook environments) |
+| **Hcat CLI** | N/A |
+| **SQL Standard Authorization** | **Apache Ranger** (Centralized security and authorization) |
+
+---
