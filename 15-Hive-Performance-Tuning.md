@@ -758,7 +758,7 @@ Imagine you have two datasets:
 
 A JOIN combines these two tables based on the common **Customer ID** to get a single result, for example: `(101, 'Alice', $50)`.
 
-## 1. Broadcast Hash Join
+## 1. Broadcast Hash Join / Map Side Join
 
 This method is the fastest when one table is **significantly smaller** than the other and can fit entirely into the memory of every processing node.
 
@@ -766,7 +766,7 @@ This method is the fastest when one table is **significantly smaller** than the 
 * **Key Advantage:** Avoids the expensive network shuffling of the large table.
 * **Example:** If Table A (Names) has 10,000 rows, and Table B (Orders) has 1 billion rows, the system will broadcast the small Table A to all nodes. Each node then joins its small chunk of the 1 billion orders locally with the complete list of names.
 
-## 2. Shuffle Hash Join
+## 2. Shuffle Hash Join / Reduce Side Join
 
 This method is a good choice when **neither table is small enough** to be broadcast, but one is still **moderably smaller** than the other.
 
@@ -953,10 +953,52 @@ flowchart TD
 
 ---
 
+## Q17. Shuffle Hash Join (ReduceSide Join)
+
+The term **"ReduceSide Join"** is the older name for what is now commonly referred to as a **Shuffle Hash Join** in Hive, or simply the **Common Join**.
+
+The Shuffle Hash Join is the **default and most generic join strategy** in Hive. It is executed across three major phases: the Map phase, the Shuffle phase, and the Reduce phase, which is where the actual join operation occurs.
+
+### 1\. The Execution Flow
+
+The Shuffle Hash Join requires the data from both tables to be **sorted and exchanged (shuffled)** across the network so that rows with the same join key end up on the same reducer.
+
+| Stage | Process | Action |
+| :--- | :--- | :--- |
+| **Mapper** | Reads the data tables. | Outputs the join key and the corresponding value/row from each table into an intermediate file (spill). Each table's rows are tagged to distinguish them. |
+| **Shuffle/Sort** | The core data exchange mechanism. | The intermediate key-value pairs are **sorted** and then **transferred (shuffled)** across the network to the correct reducer based on the hash of the **join key**. All matching keys from both tables go to the same reducer. |
+| **Reducer** | Performs the actual join. | The reducer receives all the sorted rows for a specific join key, reads them, and performs the join logic (e.g., inner, left, full outer) to produce the final joined row. |
+
+### 2\. Hive Configuration Example
+
+You can force Hive to use this classic join strategy by explicitly disabling the automatic use of more optimized joins:
+
+```sql
+SET hive.auto.convert.join=false;         -- Disables MapSide Join (and common join optimizations)
+SET hive.auto.convert.sortmerge.join=false; -- Disables Sort-Merge Bucket Join
+
+EXPLAIN select b1.* from buckettxnrecsbycatsorted b1, buckettxnrecsbycatsorted b2 where b1.txnno=b2.txnno;
+```
+
+### Use Cases and Drawbacks
+
+#### Use Case
+
+  * **Handling Large Tables:** This join works for **any table size**, making it the reliable choice when both tables involved in the join are too **large** to fit into memory or for when an optimized join is not possible.
+  * **Complex Join Types:** It is the only join type that reliably supports **`FULL OUTER JOIN`**, as it ensures all records from both sides, even those with no matches, are processed.
+
+#### Cons
+
+  * **Most Resource Intensive:** The Shuffle Hash Join is the slowest and most resource-intensive method. The necessary **shuffle** (network transfer, serialization/deserialization, and sorting) is an **expensive I/O operation** that consumes significant cluster resources.
+
+---
+
 ## Q17. Sort Merge Bucket (SMB) Map Join or Bucket Join
 
 **How:**
 Join is done in Mapper only. The corresponding buckets are joined with each other at the mapper.
+
+![img.png](images/img4.png)
 
 ```sql
 set hive.enforce.bucketing = true ;
