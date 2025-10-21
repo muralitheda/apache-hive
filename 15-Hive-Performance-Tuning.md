@@ -996,6 +996,47 @@ explain
 select b1.* 
 from txns_bucketed b1, txns_bucketed b2 
 where b1.txn_id = b2.txn_id;
+
+/*
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: b1
+            Statistics: Num rows: 14385600 Data size: 1247559450 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: txn_id is not null (type: boolean)
+              Statistics: Num rows: 14385600 Data size: 1247559450 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: txn_id (type: string), txn_date (type: string), cust_id (type: string), amount (type: double), category (type: string), subcategory (type: string), city (type: string), state (type: string), payment_type (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                Statistics: Num rows: 14385600 Data size: 1247559450 Basic stats: COMPLETE Column stats: NONE
+                Sorted Merge Bucket Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col0 (type: string)
+                    1 _col0 (type: string)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+*/
 ```
 
 **Use Case:**
