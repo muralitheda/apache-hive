@@ -1095,6 +1095,9 @@ Here’s the same explanation in a **clear, normal (non-markdown)** format — y
 * Tables need to be bucketed in the same way as join columns, so it cannot be used for other types of SQLs.
 * Partitioned tables might slow down performance.
 
+**💡 Analogy:**
+* Imagine two alphabetical phonebooks. To find common names, you don’t scan one completely for each entry; you simultaneously flip through both in order — that’s what SMJ does.
+
 ---
 
 ## Q19. Skewness and the Bottleneck Problem :
