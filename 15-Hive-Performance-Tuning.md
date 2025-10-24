@@ -1194,7 +1194,7 @@ While you noted this will be covered in Spark, **Salting** is the most robust, p
 | **Shuffle Phase** | Redistributes by key       | ⚠️ Yes             | Uneven key frequencies cause imbalance       |
 | **Reduce Phase**  | Processes each key’s group | ✅ Yes (main point) | A reducer with a hot key gets huge data load |
 
-
+![img.png](images/img7.png)
 ---
 
 ## Q20. Apache Hive 3 Enhancements
