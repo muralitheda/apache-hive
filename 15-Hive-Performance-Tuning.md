@@ -532,10 +532,6 @@ TBLPROPERTIES ("orc.compress" = "SNAPPY");
 
 ---
 
-Here’s a **clear and short version** for your notes or interview use 👇
-
----
-
 ## Q9. 🧠EXPLAIN / Execution Plan in Hive
 
 **Purpose:**
