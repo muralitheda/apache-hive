@@ -450,10 +450,6 @@ Better join order, fewer reducers, and reduced query runtime.
 
 ---
 
-Perfect — here’s a **short, interview-ready version** of your *Vectorization* explanation 👇
-
----
-
 ## Q7. Vectorization in Hive
 
 **Definition:**
