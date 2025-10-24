@@ -1161,6 +1161,16 @@ This is an **automated, feature-based solution** where Hive's optimizer dynamica
 2.  **Stage 2 (Map Join for Skewed Keys):** A follow-up job (MapReduce) is launched specifically for the temporary skewed data. In this stage, the small dimension table is loaded into memory, and the skewed keys from the fact table are processed as a **MapSide Join**.
       * This effectively breaks the bottleneck by parallelizing the work for the single skewed key across many mappers.
 
+| Aspect                       | Normal Reduce-Side Join                         | Hive Skew Join (Stage 2: Map-Side Join)                     |
+| ---------------------------- | ----------------------------------------------- | ----------------------------------------------------------- |
+| **Problem Key**              | `customer_id = 123` (10,000,000 rows)           | Same key (10,000,000 rows)                                  |
+| **Who handles it**           | **Single reducer** gets all 10M rows → overload | **20 mappers** share the 10M rows → 500,000 rows per mapper |
+| **Dimension Table Handling** | Read from HDFS as needed by reducer             | Loaded fully into memory on each mapper (fast lookups)      |
+| **Parallelism**              | Very low for skewed key (one reducer)           | High: 20 mappers process chunks in parallel                 |
+| **Other Keys**               | Processed normally by other reducers            | Processed normally by other reducers                        |
+| **Result**                   | Slow join; idle mappers waiting                 | Fast join; no single mapper or reducer overloaded           |
+
+
 #### Configuration Settings
 
 | Setting | Description |
@@ -1175,6 +1185,7 @@ This is an **automated, feature-based solution** where Hive's optimizer dynamica
 | :--- | :--- |
 | **No Query Change** needed. | **Inconsistent Performance:** Reliability can vary based on data characteristics and cluster load. |
 | Simple configuration change. | **Increased Overhead:** Requires an initial pass (stage 1) to identify and stage the skewed data. |
+
 
 ### Solution 3: Salting (The Best Practice for Skew)
 
