@@ -1278,5 +1278,22 @@ SELECT state, SUM(amount) FROM sales GROUP BY state;
 
 ✅ Hive 3 uses **ACID transactions**, executes faster with **LLAP**, and rewrites the query to use the **materialized view** automatically.
 
+### 5.🧠 Hive 3 Materialized View (MV) Refresh – Key Points
+
+1. **No automatic refresh** → You must trigger it manually.
+2. **Command used:**
+
+   ```sql
+   ALTER MATERIALIZED VIEW mv_name REBUILD;
+   ```
+3. **Two refresh modes (decided by Hive automatically):**
+
+   * **Full rebuild:** Recomputes the entire MV (default for non-ACID tables).
+   * **Incremental rebuild:** Updates only changed data (for ACID tables).
+4. **MV becomes “STALE”** whenever base table data changes.
+5. **Optimizer uses MV only when it’s “FRESH”.**
+6. **You control refresh timing** — e.g., after ETL load or via scheduled job.
+7. **Incremental refresh = faster + efficient**, but requires transactional (ACID) tables.
+8. **Query rewrite happens automatically** once MV is fresh and enabled.
 
 ---
