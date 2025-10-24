@@ -1223,7 +1223,7 @@ Hive 3 aligns with modern Hadoop ecosystem standards by retiring older, less eff
 | **Hcat CLI** | N/A |
 | **SQL Standard Authorization** | **Apache Ranger** (Centralized security and authorization) |
 
-### 🧩 **Hive 3 vs Hive 2 – Feature Comparison**
+### 4. Hive 3 vs Hive 2 – Feature Comparison
 
 | **Category**                        | **Hive 2.x**                                                                                | **Hive 3.x (Enhancements)**                                                                                                                                      |
 | ----------------------------------- | ------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
