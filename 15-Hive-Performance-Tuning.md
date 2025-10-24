@@ -1098,6 +1098,20 @@ Here’s the same explanation in a **clear, normal (non-markdown)** format — y
 **💡 Analogy:**
 * Imagine two alphabetical phonebooks. To find common names, you don’t scan one completely for each entry; you simultaneously flip through both in order — that’s what SMJ does.
 
+**💡 Summary:**
+
+| Step / Concept        | Description                                                                                     | Purpose / Notes                                                                                                          |
+| --------------------- | ----------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| **Partitioning**      | Hive internally creates **execution partitions** based on the join key (using a hash function). | Ensures that all rows with the same join key end up in the same partition for merging. Not the same as table partitions. |
+| **Shuffle**           | Rows from both tables are **shuffled across the cluster** to reach the correct partition.       | Moves data so matching keys are co-located.                                                                              |
+| **Sorting**           | Within each partition, rows are **sorted by the join key**.                                     | Needed for sequential merge; sorting is local to partition.                                                              |
+| **Merge Step**        | Sorted partitions of both tables are **merged sequentially** to produce joined rows.            | Efficiently joins rows without loading entire tables into memory.                                                        |
+| **Parallelism**       | Each partition is processed by a **separate reducer**.                                          | Enables parallel processing of large datasets.                                                                           |
+| **Skew Handling**     | Skewed keys can still overload a partition. Hive may use **skew join optimization**.            | Prevents bottlenecks for very frequent keys.                                                                             |
+| **Memory Efficiency** | Uses **streaming merge**, so memory usage is low.                                               | Works well for large datasets where map-side join isn’t feasible.                                                        |
+| **Performance Tips**  | Bucketed or pre-sorted tables improve performance.                                              | Reduces sorting cost and speeds up merge.                                                                                |
+
+
 ---
 
 ## Q19. Skewness and the Bottleneck Problem :
