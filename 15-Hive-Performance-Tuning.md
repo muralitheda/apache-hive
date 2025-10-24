@@ -1278,7 +1278,7 @@ SELECT state, SUM(amount) FROM sales GROUP BY state;
 
 ✅ Hive 3 uses **ACID transactions**, executes faster with **LLAP**, and rewrites the query to use the **materialized view** automatically.
 
-### 5.🧠 Hive 3 Materialized View (MV) Refresh – Key Points
+### 5. Hive 3 Materialized View (MV) Refresh – Key Points
 
 1. **No automatic refresh** → You must trigger it manually.
 2. **Command used:**
