@@ -958,7 +958,7 @@ flowchart TD
 The term **"ReduceSide Join"** is the older name for what is now commonly referred to as a **Shuffle Hash Join** in Hive, or simply the **Common Join**.
 
 The Shuffle Hash Join is the **default and most generic join strategy** in Hive.  
-It is executed across three major phases: the **Map phase, the Shuffle phase, and the Reduce phase**, which is where the actual join operation occurs.  
+It is executed across three major phases: `the Map phase, the Shuffle phase, and the Reduce phase`, which is where the actual join operation occurs.  
 
 ![img.png](images/img5.png)
 ### 1\. The Execution Flow
