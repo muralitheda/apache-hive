@@ -1188,6 +1188,13 @@ While you noted this will be covered in Spark, **Salting** is the most robust, p
 2. **Join:** The join is performed on the new, composite salted key (e.g., `FACT.salted_key = DIMENSION.salted_key`).
 3. **Result:** The $99$ million records are now evenly spread across $N$ reducers instead of just one, eliminating the bottleneck.
 
+| **Stage**         | **Operation**              | **Skew Possible?** | **Reason**                                   |
+| ----------------- | -------------------------- | ------------------ | -------------------------------------------- |
+| **Map Phase**     | Reads data block by block  | ❌ No               | Data is processed by file splits, not by key |
+| **Shuffle Phase** | Redistributes by key       | ⚠️ Yes             | Uneven key frequencies cause imbalance       |
+| **Reduce Phase**  | Processes each key’s group | ✅ Yes (main point) | A reducer with a hot key gets huge data load |
+
+
 ---
 
 ## Q20. Apache Hive 3 Enhancements
