@@ -1108,6 +1108,8 @@ Here’s the same explanation in a **clear, normal (non-markdown)** format — y
 3.  **Bottleneck:** All $99$ million rows with `prod_cd = 250` will be shuffled to the **same single reducer**.
 4.  **Observation:** The job quickly completes the processing of the $1$ million non-skewed records (distributed across many reducers) but gets stalled as the single, overloaded reducer attempts to process the $99$ million skewed records. This is the phenomenon of a job appearing to be stuck at **"Reducer X: 577(+1)/578"** for a prolonged period.
 
+![img.png](images/img7.png)
+
 ### Solution 1: Manual Query Splitting (Filter Skew)
 
 This is a **manual workaround** where the original join query is split into two or more parts, isolating the skewed key(s) from the non-skewed key(s).
@@ -1205,7 +1207,7 @@ While you noted this will be covered in Spark, **Salting** is the most robust, p
 | **Shuffle Phase** | Redistributes by key       | ⚠️ Yes             | Uneven key frequencies cause imbalance       |
 | **Reduce Phase**  | Processes each key’s group | ✅ Yes (main point) | A reducer with a hot key gets huge data load |
 
-![img.png](images/img7.png)
+
 ---
 
 ## Q20. Apache Hive 3 Enhancements
