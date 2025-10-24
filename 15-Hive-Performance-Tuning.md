@@ -1223,7 +1223,7 @@ Hive 3 aligns with modern Hadoop ecosystem standards by retiring older, less eff
 | **Hcat CLI** | N/A |
 | **SQL Standard Authorization** | **Apache Ranger** (Centralized security and authorization) |
 
-#### 🧩 Hive 3 vs Hive 2 — Detailed Explanation with Examples
+### 4. Hive 3 vs Hive 2 — Detailed Explanation with Examples
 
 | **Feature**                                | **Hive 2.x Behavior**                                                                                 | **Hive 3.x Enhancement (with Example)**                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | ------------------------------------------ | ----------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -1245,7 +1245,7 @@ Hive 3 aligns with modern Hadoop ecosystem standards by retiring older, less eff
 | **1️⃣6️⃣ Metastore (HMS)**                 | Non-transactional — concurrent DDLs may fail.                                                         | ✅ **Transactional Metastore:** concurrent table creation/alter/drop operations are supported safely.                                                                                                                                                                                                                                                                                                                                                                                                |
 
 
-#### Example: ACID + LLAP + MV in Hive 3
+### Example: ACID + LLAP + MV in Hive 3
 
 ```sql
 -- Enable ACID and LLAP
