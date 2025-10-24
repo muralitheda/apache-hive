@@ -457,7 +457,7 @@ Perfect — here’s a **short, interview-ready version** of your *Vectorization
 ## Q7. Vectorization in Hive
 
 **Definition:**
-Vectorization improves query performance by processing a *batch of rows (default 1024)* at once instead of row-by-row.
+Vectorization improves query performance by processing a `batch of rows (default 1024)` at once instead of row-by-row.
 
 **How it works:**
 
